@@ -70,7 +70,7 @@ Level 7: orchestrate/workflows
 
 Single version for the entire kernel:
 - Phase target: `v<major>.<minor>.<patch>` (e.g., `v0.1.0`)
-- Dev pre-release: `v<target>-dev.<NN>` (e.g., `v0.1.0-dev.03`)
+- Dev pre-release: `v<target>-dev.<objective>.<issue>` (e.g., `v0.1.0-dev.3.7`)
 
 ## Skills
 
