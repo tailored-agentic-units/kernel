@@ -1,0 +1,22 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: kernel-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ~/.ollama:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_HOST=0.0.0.0
+    devices:
+      - nvidia.com/gpu=all
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "ollama serve &
+      sleep 10 &&
+      echo 'Pulling llama3.2:3b model...' &&
+      ollama pull llama3.2:3b &&
+      echo 'Model ready. Ollama server running.' &&
+      wait"

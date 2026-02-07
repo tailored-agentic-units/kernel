@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package tau.kernel.v1;
+
+// Session lifecycle — the extension boundary.
+// External services connect to the kernel through this interface.
+// The kernel has no awareness of what connects to it.
+service KernelService {
+  // Create a new session with bootstrap context.
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+
+  // Submit a prompt and stream back results (agentic loop).
+  rpc Run(RunRequest) returns (stream RunResponse);
+
+  // Inject additional context into an active session.
+  rpc InjectContext(InjectContextRequest) returns (InjectContextResponse);
+
+  // Get session metadata and diagnostics.
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+}
+
+// CreateSession
+
+message CreateSessionRequest {
+  // Bootstrap context for the session.
+  repeated ContextEntry bootstrap_context = 1;
+}
+
+message CreateSessionResponse {
+  string session_id = 1;
+}
+
+// Run
+
+message RunRequest {
+  string session_id = 1;
+  string prompt = 2;
+}
+
+message RunResponse {
+  oneof event {
+    TokenEvent token = 1;
+    ToolCallEvent tool_call = 2;
+    StatusEvent status = 3;
+    ErrorEvent error = 4;
+  }
+}
+
+message TokenEvent {
+  string text = 1;
+}
+
+message ToolCallEvent {
+  string tool_name = 1;
+  string arguments = 2;
+  string result = 3;
+}
+
+message StatusEvent {
+  SessionStatus status = 1;
+  string message = 2;
+}
+
+message ErrorEvent {
+  string code = 1;
+  string message = 2;
+}
+
+// InjectContext
+
+message InjectContextRequest {
+  string session_id = 1;
+  repeated ContextEntry entries = 2;
+}
+
+message InjectContextResponse {}
+
+// GetSession
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  string session_id = 1;
+  SessionStatus status = 2;
+}
+
+// Shared types
+
+message ContextEntry {
+  string key = 1;
+  string content = 2;
+  string content_type = 3;
+}
+
+enum SessionStatus {
+  SESSION_STATUS_UNSPECIFIED = 0;
+  SESSION_STATUS_ACTIVE = 1;
+  SESSION_STATUS_RUNNING = 2;
+  SESSION_STATUS_COMPLETED = 3;
+  SESSION_STATUS_ERROR = 4;
+}

@@ -1,0 +1,15 @@
+{
+  "name": "gemma-agent",
+  "provider": {
+    "name": "ollama",
+    "base_url": "http://localhost:11434"
+  },
+  "model": {
+    "name": "gemma3:4b",
+    "capabilities": {
+      "chat": {
+        "max_tokens": 4096
+      }
+    }
+  }
+}
