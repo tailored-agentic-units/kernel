@@ -1,6 +1,7 @@
 package protocol_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/tailored-agentic-units/kernel/core/protocol"
@@ -109,10 +110,10 @@ func TestProtocol_SupportsStreaming(t *testing.T) {
 }
 
 func TestNewMessage_StringContent(t *testing.T) {
-	msg := protocol.NewMessage("user", "Hello, world!")
+	msg := protocol.NewMessage(protocol.RoleUser, "Hello, world!")
 
-	if msg.Role != "user" {
-		t.Errorf("got role %q, want %q", msg.Role, "user")
+	if msg.Role != protocol.RoleUser {
+		t.Errorf("got role %q, want %q", msg.Role, protocol.RoleUser)
 	}
 
 	content, ok := msg.Content.(string)
@@ -129,10 +130,10 @@ func TestNewMessage_StructuredContent(t *testing.T) {
 		"text": "Hello",
 	}
 
-	msg := protocol.NewMessage("assistant", content)
+	msg := protocol.NewMessage(protocol.RoleAssistant, content)
 
-	if msg.Role != "assistant" {
-		t.Errorf("got role %q, want %q", msg.Role, "assistant")
+	if msg.Role != protocol.RoleAssistant {
+		t.Errorf("got role %q, want %q", msg.Role, protocol.RoleAssistant)
 	}
 
 	if _, ok := msg.Content.(map[string]any); !ok {
@@ -140,14 +141,112 @@ func TestNewMessage_StructuredContent(t *testing.T) {
 	}
 }
 
+func TestRole_Constants(t *testing.T) {
+	tests := []struct {
+		name     string
+		role     protocol.Role
+		expected string
+	}{
+		{"system", protocol.RoleSystem, "system"},
+		{"user", protocol.RoleUser, "user"},
+		{"assistant", protocol.RoleAssistant, "assistant"},
+		{"tool", protocol.RoleTool, "tool"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.role) != tt.expected {
+				t.Errorf("got %q, want %q", tt.role, tt.expected)
+			}
+		})
+	}
+}
+
+func TestMessage_ToolCallFields(t *testing.T) {
+	toolCalls := []protocol.ToolCall{
+		{ID: "call_1", Name: "get_weather", Arguments: `{"city":"NYC"}`},
+		{ID: "call_2", Name: "get_time", Arguments: `{"tz":"UTC"}`},
+	}
+
+	msg := protocol.Message{
+		Role:      protocol.RoleAssistant,
+		ToolCalls: toolCalls,
+	}
+
+	if len(msg.ToolCalls) != 2 {
+		t.Fatalf("got %d tool calls, want 2", len(msg.ToolCalls))
+	}
+	if msg.ToolCalls[0].Name != "get_weather" {
+		t.Errorf("got name %q, want %q", msg.ToolCalls[0].Name, "get_weather")
+	}
+	if msg.ToolCalls[1].ID != "call_2" {
+		t.Errorf("got id %q, want %q", msg.ToolCalls[1].ID, "call_2")
+	}
+}
+
+func TestMessage_ToolCallID(t *testing.T) {
+	msg := protocol.Message{
+		Role:       protocol.RoleTool,
+		Content:    `{"temp": 72}`,
+		ToolCallID: "call_1",
+	}
+
+	if msg.ToolCallID != "call_1" {
+		t.Errorf("got tool_call_id %q, want %q", msg.ToolCallID, "call_1")
+	}
+}
+
+func TestMessage_JSON_OmitsEmptyToolFields(t *testing.T) {
+	msg := protocol.NewMessage(protocol.RoleUser, "hello")
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	if _, exists := raw["tool_call_id"]; exists {
+		t.Error("tool_call_id should be omitted when empty")
+	}
+	if _, exists := raw["tool_calls"]; exists {
+		t.Error("tool_calls should be omitted when empty")
+	}
+}
+
+func TestMessage_JSON_IncludesToolFields(t *testing.T) {
+	msg := protocol.Message{
+		Role:      protocol.RoleAssistant,
+		ToolCalls: []protocol.ToolCall{{ID: "call_1", Name: "fn", Arguments: "{}"}},
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	if _, exists := raw["tool_calls"]; !exists {
+		t.Error("tool_calls should be present when populated")
+	}
+}
+
 func TestNewMessage_Roles(t *testing.T) {
 	tests := []struct {
 		name string
-		role string
+		role protocol.Role
 	}{
-		{"user", "user"},
-		{"assistant", "assistant"},
-		{"system", "system"},
+		{"user", protocol.RoleUser},
+		{"assistant", protocol.RoleAssistant},
+		{"system", protocol.RoleSystem},
+		{"tool", protocol.RoleTool},
 	}
 
 	for _, tt := range tests {

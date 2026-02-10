@@ -21,7 +21,7 @@ func NewSimpleChatAgent(id string, content string) *MockAgent {
 		FinishReason string `json:"finish_reason,omitempty"`
 	}{
 		Index:   0,
-		Message: protocol.NewMessage("assistant", content),
+		Message: protocol.NewMessage(protocol.RoleAssistant, content),
 	})
 
 	return NewMockAgent(
@@ -147,7 +147,7 @@ func NewMultiProtocolAgent(id string) *MockAgent {
 		FinishReason string `json:"finish_reason,omitempty"`
 	}{
 		Index:   0,
-		Message: protocol.NewMessage("assistant", "Mock chat response"),
+		Message: protocol.NewMessage(protocol.RoleAssistant, "Mock chat response"),
 	})
 
 	toolsResponse := &response.ToolsResponse{

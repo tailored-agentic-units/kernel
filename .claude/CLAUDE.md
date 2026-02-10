@@ -29,6 +29,7 @@ Single Go module. All packages share one version. No dependency cascade.
 
 ```
 kernel/
+├── _project/          # Project identity, phase, and objective context
 ├── core/               # Foundational types: protocol, response, config, model
 ├── agent/              # LLM communication: agent interface, client, providers, request, mock
 ├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
@@ -58,6 +59,13 @@ Level 5: orchestrate/observability, orchestrate/messaging, orchestrate/config
 Level 6: orchestrate/hub, orchestrate/state
 Level 7: orchestrate/workflows
 ```
+
+## Design Principles
+
+- Every package's exported data structures are its protocol. Higher-level packages that depend on it consume those types natively.
+- `core/` types are the foundational protocol — subsystems build on them, not around them. If a subsystem needs to mutate a core type signature, evolve the core type instead.
+- This applies at every level of the hierarchy: if `session` defines `Session`, then `kernel` uses `session.Session` directly — no wrapping, no re-definition.
+- When planning implementation, address gaps at the lowest affected dependency level rather than working around them at higher levels.
 
 ## Testing
 
