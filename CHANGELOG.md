@@ -1,5 +1,18 @@
 # Changelog
 
+## Current
+
+### core
+
+- Add `protocol.Role` typed string enum with `RoleSystem`, `RoleUser`, `RoleAssistant`, `RoleTool` constants (#11)
+- Add `protocol.ToolCall` struct for tool invocations in conversation history (#11)
+- Add `ToolCallID` and `ToolCalls` fields to `protocol.Message` for tool-calling conversations (#11)
+
+### session
+
+- Add `Session` interface with `ID()`, `AddMessage()`, `Messages()`, `Clear()` (#11)
+- Add in-memory implementation with concurrent-safe access and defensive copies (#11)
+
 ## v0.0.1 - 2026-02-07
 
 Initial kernel repository — consolidated tau-core, tau-agent, tau-orchestrate, and tau-runtime into a single module.

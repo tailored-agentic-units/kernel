@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/tailored-agentic-units/kernel/agent/client"
+	"github.com/tailored-agentic-units/kernel/agent/providers"
+	"github.com/tailored-agentic-units/kernel/agent/request"
 	"github.com/tailored-agentic-units/kernel/core/config"
 	"github.com/tailored-agentic-units/kernel/core/model"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
-	"github.com/tailored-agentic-units/kernel/agent/providers"
-	"github.com/tailored-agentic-units/kernel/agent/request"
 	"github.com/tailored-agentic-units/kernel/core/response"
 )
 
@@ -316,10 +316,10 @@ func (a *agent) initMessages(prompt string) []protocol.Message {
 	messages := make([]protocol.Message, 0)
 
 	if a.systemPrompt != "" {
-		messages = append(messages, protocol.NewMessage("system", a.systemPrompt))
+		messages = append(messages, protocol.NewMessage(protocol.RoleSystem, a.systemPrompt))
 	}
 
-	messages = append(messages, protocol.NewMessage("user", prompt))
+	messages = append(messages, protocol.NewMessage(protocol.RoleUser, prompt))
 
 	return messages
 }

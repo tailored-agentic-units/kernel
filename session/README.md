@@ -1,7 +1,11 @@
 # session
 
-Conversation history management, context window optimization, and compaction strategies for the TAU (Tailored Agentic Units) kernel.
+Conversation history management for the TAU kernel runtime loop.
 
-## Status
+Provides the `Session` interface and an in-memory implementation. Messages use `protocol.Message` natively, including tool call support for multi-turn agentic conversations.
 
-Under development. See [tau-platform](https://github.com/tailored-agentic-units/tau-platform) for ecosystem coordination and concept documents.
+## Future
+
+- Token counting and context window tracking
+- Compaction strategies
+- Persistent session storage (via ConnectRPC extension boundary)

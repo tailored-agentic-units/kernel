@@ -656,5 +656,4 @@ After understanding checkpointing basics:
 
 - **Phase 6 Session Summary**: `_context/sessions/phase-06-checkpointing.md`
 - **ARCHITECTURE.md**: Checkpointing design and interfaces
-- **PROJECT.md**: Phase 6 requirements and success criteria
 - **Source Code**: `pkg/state/checkpoint.go` - CheckpointStore interface and implementations

@@ -444,8 +444,7 @@ docker exec tau-orchestrate-ollama ollama pull llama3.2:3b  # Pull if missing
 After exploring the examples:
 
 1. **Review Implementation:** Check session summaries in `_context/sessions/` for implementation details
-2. **Read Documentation:** See `PROJECT.md` and `ARCHITECTURE.md` for system design
-3. **Combine Patterns:** Try composing state graphs with sequential chains or parallel execution
+2. **Combine Patterns:** Try composing state graphs with sequential chains or parallel execution
 4. **Custom Scenarios:** Modify examples with your own agents and workflows
 
 ## Example Dependencies
@@ -473,7 +472,6 @@ Phase 7 (Conditional) ─────┘
 ## Getting Help
 
 - **Example-specific issues:** See individual README.md in each example directory
-- **General questions:** Check `PROJECT.md` and `ARCHITECTURE.md` in repository root
 - **Bug reports:** Open issue at https://github.com/tailored-agentic-units/tau-orchestrate/issues
 
 ## License
