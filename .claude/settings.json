@@ -1,16 +1,4 @@
 {
-  "plansDirectory": "./.claude/plans",
-  "extraKnownMarketplaces": {
-    "tau-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "tailored-agentic-units/tau-marketplace"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "tau@tau-marketplace": true
-  },
   "permissions": {
     "allow": [
       "Bash(buf generate*)",
@@ -37,5 +25,8 @@
       "Skill(tau:skill-creator)",
       "Skill(tau:tau-overview)"
     ]
-  }
+  },
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {},
+  "plansDirectory": "./.claude/plans"
 }
