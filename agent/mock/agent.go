@@ -5,9 +5,9 @@ import (
 
 	"github.com/tailored-agentic-units/kernel/agent"
 	"github.com/tailored-agentic-units/kernel/agent/client"
+	"github.com/tailored-agentic-units/kernel/agent/providers"
 	"github.com/tailored-agentic-units/kernel/core/model"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
-	"github.com/tailored-agentic-units/kernel/agent/providers"
 	"github.com/tailored-agentic-units/kernel/core/response"
 )
 
@@ -199,7 +199,7 @@ func (m *MockAgent) VisionStream(ctx context.Context, prompt string, images []st
 }
 
 // Tools returns the predetermined tools response.
-func (m *MockAgent) Tools(ctx context.Context, prompt string, tools []agent.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
+func (m *MockAgent) Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
 	return m.toolsResponse, m.toolsError
 }
 

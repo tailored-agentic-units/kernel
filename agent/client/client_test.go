@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/tailored-agentic-units/kernel/agent/client"
+	"github.com/tailored-agentic-units/kernel/agent/providers"
+	"github.com/tailored-agentic-units/kernel/agent/request"
 	"github.com/tailored-agentic-units/kernel/core/config"
 	"github.com/tailored-agentic-units/kernel/core/model"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
-	"github.com/tailored-agentic-units/kernel/agent/providers"
-	"github.com/tailored-agentic-units/kernel/agent/request"
 	"github.com/tailored-agentic-units/kernel/core/response"
 )
 
@@ -171,7 +171,7 @@ func TestClient_Execute_Tools(t *testing.T) {
 		protocol.NewMessage("user", "What's the weather in Boston?"),
 	}
 
-	tools := []providers.ToolDefinition{
+	tools := []protocol.Tool{
 		{
 			Name:        "get_weather",
 			Description: "Get current weather for a location",

@@ -1,16 +1,16 @@
 package request
 
 import (
+	"github.com/tailored-agentic-units/kernel/agent/providers"
 	"github.com/tailored-agentic-units/kernel/core/model"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
-	"github.com/tailored-agentic-units/kernel/agent/providers"
 )
 
 // ToolsRequest represents a tools (function calling) protocol request.
 // Separates tool definitions (protocol input data) from model configuration options.
 type ToolsRequest struct {
 	messages []protocol.Message
-	tools    []providers.ToolDefinition
+	tools    []protocol.Tool
 	options  map[string]any
 	provider providers.Provider
 	model    *model.Model
@@ -20,7 +20,7 @@ type ToolsRequest struct {
 // Messages contain the conversation history.
 // Tools define the available functions the model can call.
 // Options specify model configuration (temperature, max_tokens, etc.).
-func NewTools(p providers.Provider, m *model.Model, messages []protocol.Message, tools []providers.ToolDefinition, opts map[string]any) *ToolsRequest {
+func NewTools(p providers.Provider, m *model.Model, messages []protocol.Message, tools []protocol.Tool, opts map[string]any) *ToolsRequest {
 	return &ToolsRequest{
 		messages: messages,
 		tools:    tools,

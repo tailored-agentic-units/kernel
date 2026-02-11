@@ -163,11 +163,9 @@ Models with strong reasoning but limited tool calling:
 
 ## Known Gaps
 
-Two limitations identified in the current codebase, deferred to per-subsystem concept sessions:
+One limitation identified in the current codebase, deferred to per-subsystem concept sessions:
 
 1. **Agent methods create fresh messages** — The `Agent` interface methods accept a `prompt string` and internally create a fresh message list. Incompatible with multi-turn conversations where full history must be passed. Deferred to agent subsystem redesign.
-
-2. **Tool type duplication** — Tool definitions exist in `agent.Tool` and `providers.ToolDefinition`. With tools introducing its own canonical type, this becomes a three-way duplication. Deferred to tools and agent concept sessions.
 
 ## Principles
 

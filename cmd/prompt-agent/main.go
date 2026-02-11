@@ -14,6 +14,7 @@ import (
 
 	"github.com/tailored-agentic-units/kernel/agent"
 	"github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 )
 
 func main() {
@@ -156,7 +157,7 @@ func executeVisionStream(ctx context.Context, agent agent.Agent, prompt string, 
 	fmt.Println()
 }
 
-func executeTools(ctx context.Context, agent agent.Agent, prompt string, tools []agent.Tool) {
+func executeTools(ctx context.Context, agent agent.Agent, prompt string, tools []protocol.Tool) {
 	response, err := agent.Tools(ctx, prompt, tools)
 	if err != nil {
 		log.Fatalf("Tools failed: %v", err)
@@ -263,13 +264,13 @@ func executeEmbeddings(ctx context.Context, agent agent.Agent, input string) {
 	}
 }
 
-func loadTools(filename string) []agent.Tool {
+func loadTools(filename string) []protocol.Tool {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Failed to read tools file: %v", err)
 	}
 
-	var tools []agent.Tool
+	var tools []protocol.Tool
 	if err := json.Unmarshal(data, &tools); err != nil {
 		log.Fatalf("Failed to parse tools file: %v", err)
 	}

@@ -22,17 +22,8 @@ type VisionData struct {
 type ToolsData struct {
 	Model    string
 	Messages []protocol.Message
-	Tools    []ToolDefinition
+	Tools    []protocol.Tool
 	Options  map[string]any
-}
-
-// ToolDefinition represents a provider-agnostic tool (function) definition.
-// Providers transform this generic format to their specific API format
-// (OpenAI, Anthropic, Google, etc.).
-type ToolDefinition struct {
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Parameters  map[string]any `json:"parameters"` // JSON Schema
 }
 
 // EmbeddingsData contains the data needed to marshal an embeddings request.

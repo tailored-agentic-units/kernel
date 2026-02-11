@@ -18,7 +18,7 @@
 //	    Vision(ctx context.Context, prompt string, images []string, opts ...map[string]any) (*types.ChatResponse, error)
 //	    VisionStream(ctx context.Context, prompt string, images []string, opts ...map[string]any) (<-chan types.StreamingChunk, error)
 //
-//	    Tools(ctx context.Context, prompt string, tools []Tool, opts ...map[string]any) (*types.ToolsResponse, error)
+//	    Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*types.ToolsResponse, error)
 //
 //	    Embed(ctx context.Context, input string, opts ...map[string]any) (*types.EmbeddingsResponse, error)
 //	}
@@ -120,7 +120,7 @@
 //
 // Function calling with tool definitions:
 //
-//	tools := []agent.Tool{
+//	tools := []protocol.Tool{
 //	    {
 //	        Name:        "get_weather",
 //	        Description: "Get the current weather for a location",
@@ -212,12 +212,12 @@
 //
 // # Tool Definitions
 //
-// Tools follow the OpenAI function calling schema:
+// Tool definitions use the canonical protocol.Tool type from core/protocol:
 //
 //	type Tool struct {
-//	    Name        string         // Function name
-//	    Description string         // What the function does
-//	    Parameters  map[string]any // JSON Schema for parameters
+//	    Name        string         `json:"name"`        // Function name
+//	    Description string         `json:"description"` // What the function does
+//	    Parameters  map[string]any `json:"parameters"`  // JSON Schema for parameters
 //	}
 //
 // The Parameters field uses JSON Schema format:
