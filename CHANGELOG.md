@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.0-dev.1.12
+
+### core
+
+- Add `protocol.Tool` as canonical tool definition type, replacing `agent.Tool` and `providers.ToolDefinition` (#12)
+
+### tools
+
+- Add global tool registry with `Register`, `Replace`, `Get`, `List`, `Execute` (#12)
+
 ## v0.1.0-dev.1.11
 
 ### core
