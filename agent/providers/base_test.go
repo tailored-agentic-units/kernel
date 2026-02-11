@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/agent/providers"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 )
 
 func TestNewBaseProvider(t *testing.T) {
@@ -121,7 +121,7 @@ func TestBaseProvider_Marshal_Tools(t *testing.T) {
 		Messages: []protocol.Message{
 			protocol.NewMessage("user", "What's the weather?"),
 		},
-		Tools: []providers.ToolDefinition{
+		Tools: []protocol.Tool{
 			{
 				Name:        "get_weather",
 				Description: "Get weather for a location",

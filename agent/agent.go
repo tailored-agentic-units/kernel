@@ -58,7 +58,7 @@ type Agent interface {
 
 	// Tools executes a tools protocol request with function definitions.
 	// Returns the parsed tools response with tool calls or an error.
-	Tools(ctx context.Context, prompt string, tools []Tool, opts ...map[string]any) (*response.ToolsResponse, error)
+	Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error)
 
 	// Embed executes an embeddings protocol request.
 	// Returns the parsed embeddings response or an error.
@@ -214,24 +214,14 @@ func (a *agent) VisionStream(ctx context.Context, prompt string, images []string
 }
 
 // Tools executes a tools protocol request with function definitions.
-// Converts agent.Tool structs to providers.ToolDefinition format.
+// Converts protocol.Tool structs to providers.ToolDefinition format.
 // Merges model's configured tools options with runtime opts.
 // Returns parsed ToolsResponse with tool calls or error.
-func (a *agent) Tools(ctx context.Context, prompt string, tools []Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
+func (a *agent) Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Tools, opts...)
 
-	// Convert agent.Tool to providers.ToolDefinition
-	toolDefs := make([]providers.ToolDefinition, len(tools))
-	for i, tool := range tools {
-		toolDefs[i] = providers.ToolDefinition{
-			Name:        tool.Name,
-			Description: tool.Description,
-			Parameters:  tool.Parameters,
-		}
-	}
-
-	req := request.NewTools(a.provider, a.model, messages, toolDefs, options)
+	req := request.NewTools(a.provider, a.model, messages, tools, options)
 
 	result, err := a.client.Execute(ctx, req)
 	if err != nil {
@@ -322,19 +312,4 @@ func (a *agent) initMessages(prompt string) []protocol.Message {
 	messages = append(messages, protocol.NewMessage(protocol.RoleUser, prompt))
 
 	return messages
-}
-
-// Tool defines a function that can be called by the LLM.
-// Used with the Tools protocol for function calling capabilities.
-type Tool struct {
-	// Name is the function name that the LLM will call.
-	Name string `json:"name"`
-
-	// Description explains what the function does.
-	// Should be clear and detailed to help the LLM decide when to use it.
-	Description string `json:"description"`
-
-	// Parameters is a JSON Schema defining the function's parameters.
-	// Uses the format: {"type": "object", "properties": {...}, "required": [...]}
-	Parameters map[string]any `json:"parameters"`
 }

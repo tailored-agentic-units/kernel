@@ -293,7 +293,7 @@ func TestAgent_Tools(t *testing.T) {
 		t.Fatalf("New failed: %v", err)
 	}
 
-	tools := []agent.Tool{
+	tools := []protocol.Tool{
 		{
 			Name:        "get_weather",
 			Description: "Get weather for a location",
