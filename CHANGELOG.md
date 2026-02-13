@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.0-dev.1.13
+
+### memory
+
+- Add `Store` interface for pluggable persistence with `List`, `Load`, `Save`, `Delete` (#13)
+- Add `FileStore` filesystem implementation with atomic writes and hidden file filtering (#13)
+- Add `Cache` session-scoped context cache with progressive loading via `Bootstrap`, `Resolve`, `Flush` (#13)
+- Add `Entry` type and namespace constants (`memory`, `skills`, `agents`) (#13)
+- Consolidate `skills/` skeleton into memory package as a namespace convention (#13)
+
 ## v0.1.0-dev.1.12
 
 ### core

@@ -1,7 +1,3 @@
 # memory
 
-Filesystem-based persistent memory for the TAU (Tailored Agentic Units) kernel: bootstrap loading, working memory, and structured notes.
-
-## Status
-
-Under development. See [tau-platform](https://github.com/tailored-agentic-units/tau-platform) for ecosystem coordination and concept documents.
+Context composition pipeline for the TAU (Tailored Agentic Units) kernel: persistent memory, skills, and agent profiles through a hierarchical key-value namespace with session-scoped caching and progressive loading.
