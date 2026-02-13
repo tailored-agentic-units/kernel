@@ -11,9 +11,9 @@ Implement the agentic processing loop — the core observe/think/act/repeat cycl
 
 | # | Title | Status |
 |---|-------|--------|
-| 11 | Session interface and in-memory implementation | Open |
-| 12 | Tool registry interface and execution | Open |
-| 13 | Memory store interface and filesystem implementation | Open |
+| 11 | Session interface and in-memory implementation | Closed |
+| 12 | Tool registry interface and execution | Closed |
+| 13 | Memory store interface and filesystem implementation | Closed |
 | 14 | Kernel runtime loop | Open |
 | 15 | Kernel integration tests | Open |
 

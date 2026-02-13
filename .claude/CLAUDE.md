@@ -33,9 +33,9 @@ kernel/
 ├── core/               # Foundational types: protocol, response, config, model
 ├── agent/              # LLM communication: agent interface, client, providers, request, mock
 ├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
-├── memory/             # Context composition: persistent memory, skills, agent profiles (skeleton)
-├── tools/              # Tool execution (skeleton)
-├── session/            # Conversation management (skeleton)
+├── memory/             # Context composition: Store interface, FileStore, Cache with progressive loading
+├── tools/              # Tool execution: global registry with Register, Execute, List
+├── session/            # Conversation management: Session interface, in-memory implementation
 ├── mcp/                # MCP client (skeleton)
 ├── kernel/             # Runtime loop + ConnectRPC composition (skeleton)
 ├── rpc/                # ConnectRPC infrastructure (proto, buf configs, generated code)
@@ -57,6 +57,9 @@ Level 4: agent/mock
 Level 5: orchestrate/observability, orchestrate/messaging, orchestrate/config
 Level 6: orchestrate/hub, orchestrate/state
 Level 7: orchestrate/workflows
+
+Foundation (Level 0 — depend only on core/protocol):
+  memory, tools, session
 ```
 
 ## Design Principles

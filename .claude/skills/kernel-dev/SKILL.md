@@ -13,7 +13,8 @@ description: >
 
 - Adding new LLM providers or protocol support to `agent/`
 - Adding new workflow patterns, observers, or state graph extensions to `orchestrate/`
-- Adding implementation to skeleton packages (memory, tools, session, skills, mcp)
+- Adding implementation to skeleton packages (mcp, kernel)
+- Extending the memory context pipeline (Store backends, skill loading, agent profiles)
 - Implementing the kernel runtime loop
 - Architectural decisions affecting package boundaries
 - Writing tests for any kernel package
@@ -35,6 +36,9 @@ Level 6: orchestrate/messaging, orchestrate/config  (Level 5)
 Level 7: orchestrate/hub                      (depends on Level 3-6)
 Level 8: orchestrate/state                    (depends on Level 5-6)
 Level 9: orchestrate/workflows                (depends on Level 5-8)
+
+Foundation (Level 0 — depend only on core/protocol):
+  memory, tools, session
 ```
 
 Dependencies only flow downward. Never import a higher-level package from a lower-level one.
@@ -58,6 +62,9 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 | `orchestrate/observability` | Execution tracing | `Observer` |
 | `orchestrate/state` | State graphs, checkpoints | `State`, `Graph`, `CheckpointStore` |
 | `orchestrate/workflows` | Workflow patterns | `ProcessChain`, `ProcessParallel`, `ProcessConditional` |
+| `memory` | Context composition pipeline | `Store`, `Cache`, `Entry`, `NewFileStore`, `NewCache` |
+| `tools` | Tool execution and registry | `Handler`, `Result`, `Register`, `Execute`, `List` |
+| `session` | Conversation management | `Session`, `NewMemorySession` |
 
 ## Extension Patterns
 
