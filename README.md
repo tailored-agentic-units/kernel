@@ -15,10 +15,9 @@ github.com/tailored-agentic-units/kernel
 | `core/` | Foundational type vocabulary: protocol constants, response types, configuration, model |
 | `agent/` | LLM communication: agent interface, HTTP client, providers (Ollama, Azure), request construction |
 | `orchestrate/` | Multi-agent coordination: hubs, messaging, state graphs, workflow patterns, observability |
-| `memory/` | Persistent memory (under development) |
+| `memory/` | Context composition pipeline: persistent memory, skills, agent profiles (under development) |
 | `tools/` | Tool execution and registry (under development) |
 | `session/` | Conversation history management (under development) |
-| `skills/` | Progressive disclosure skill system (under development) |
 | `mcp/` | Model Context Protocol client (under development) |
 | `kernel/` | Runtime loop and ConnectRPC composition (under development) |
 

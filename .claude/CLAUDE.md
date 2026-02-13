@@ -33,10 +33,9 @@ kernel/
 ├── core/               # Foundational types: protocol, response, config, model
 ├── agent/              # LLM communication: agent interface, client, providers, request, mock
 ├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
-├── memory/             # Persistent memory (skeleton)
+├── memory/             # Context composition: persistent memory, skills, agent profiles (skeleton)
 ├── tools/              # Tool execution (skeleton)
 ├── session/            # Conversation management (skeleton)
-├── skills/             # Progressive disclosure (skeleton)
 ├── mcp/                # MCP client (skeleton)
 ├── kernel/             # Runtime loop + ConnectRPC composition (skeleton)
 ├── rpc/                # ConnectRPC infrastructure (proto, buf configs, generated code)
