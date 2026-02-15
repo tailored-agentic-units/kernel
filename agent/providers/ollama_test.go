@@ -143,9 +143,7 @@ func TestOllama_PrepareRequest(t *testing.T) {
 	// Marshal chat data using the provider
 	chatData := &providers.ChatData{
 		Model: "llama2",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "Hello"),
-		},
+		Messages: protocol.InitMessages("user", "Hello"),
 		Options: map[string]any{},
 	}
 
@@ -195,9 +193,7 @@ func TestOllama_PrepareStreamRequest(t *testing.T) {
 
 	chatData := &providers.ChatData{
 		Model: "llama2",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "Hello"),
-		},
+		Messages: protocol.InitMessages("user", "Hello"),
 		Options: map[string]any{"stream": true},
 	}
 

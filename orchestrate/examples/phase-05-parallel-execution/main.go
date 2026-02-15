@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 type ProductReview struct {
@@ -22,11 +23,11 @@ type ProductReview struct {
 }
 
 type SentimentResult struct {
-	ReviewID   int
-	Product    string
-	Review     string
-	Sentiment  string
-	Analysis   string
+	ReviewID    int
+	Product     string
+	Review      string
+	Sentiment   string
+	Analysis    string
 	ProcessedAt time.Time
 }
 
@@ -121,7 +122,9 @@ Respond in format: "SENTIMENT" where SENTIMENT is one word: positive, neutral, o
 	taskProcessor := func(ctx context.Context, review ProductReview) (SentimentResult, error) {
 		prompt := fmt.Sprintf("Analyze sentiment of this review: \"%s\"", review.Review)
 
-		response, err := sentimentAgent.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := sentimentAgent.Chat(ctx, messages)
 		if err != nil {
 			return SentimentResult{}, fmt.Errorf("sentiment analysis failed: %w", err)
 		}
@@ -134,11 +137,11 @@ Respond in format: "SENTIMENT" where SENTIMENT is one word: positive, neutral, o
 		}
 
 		return SentimentResult{
-			ReviewID:   review.ID,
-			Product:    review.Product,
-			Review:     review.Review,
-			Sentiment:  sentimentWord,
-			Analysis:   analysis,
+			ReviewID:    review.ID,
+			Product:     review.Product,
+			Review:      review.Review,
+			Sentiment:   sentimentWord,
+			Analysis:    analysis,
 			ProcessedAt: time.Now(),
 		}, nil
 	}

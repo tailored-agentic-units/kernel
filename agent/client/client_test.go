@@ -82,9 +82,7 @@ func TestClient_Execute_Chat(t *testing.T) {
 	c := client.New(cfg)
 
 	// Create request
-	messages := []protocol.Message{
-		protocol.NewMessage("user", "Hello"),
-	}
+	messages := protocol.InitMessages("user", "Hello")
 	req := request.NewChat(provider, mdl, messages, map[string]any{})
 
 	// Execute
@@ -114,7 +112,7 @@ func TestClient_Execute_Tools(t *testing.T) {
 			Message struct {
 				Role      string              `json:"role"`
 				Content   string              `json:"content"`
-				ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			} `json:"message"`
 			FinishReason string `json:"finish_reason,omitempty"`
 		}{
@@ -122,18 +120,15 @@ func TestClient_Execute_Tools(t *testing.T) {
 			Message: struct {
 				Role      string              `json:"role"`
 				Content   string              `json:"content"`
-				ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			}{
 				Role:    "assistant",
 				Content: "",
-				ToolCalls: []response.ToolCall{
+				ToolCalls: []protocol.ToolCall{
 					{
-						ID:   "call_123",
-						Type: "function",
-						Function: response.ToolCallFunction{
-							Name:      "get_weather",
-							Arguments: `{"location":"Boston"}`,
-						},
+						ID:        "call_123",
+						Name:      "get_weather",
+						Arguments: `{"location":"Boston"}`,
 					},
 				},
 			},
@@ -167,9 +162,7 @@ func TestClient_Execute_Tools(t *testing.T) {
 	}
 	c := client.New(cfg)
 
-	messages := []protocol.Message{
-		protocol.NewMessage("user", "What's the weather in Boston?"),
-	}
+	messages := protocol.InitMessages("user", "What's the weather in Boston?")
 
 	tools := []protocol.Tool{
 		{
@@ -208,8 +201,8 @@ func TestClient_Execute_Tools(t *testing.T) {
 	}
 
 	toolCall := toolsResp.Choices[0].Message.ToolCalls[0]
-	if toolCall.Function.Name != "get_weather" {
-		t.Errorf("got function name %q, want %q", toolCall.Function.Name, "get_weather")
+	if toolCall.Name != "get_weather" {
+		t.Errorf("got function name %q, want %q", toolCall.Name, "get_weather")
 	}
 }
 
@@ -310,9 +303,7 @@ func TestClient_Execute_HTTPError(t *testing.T) {
 	}
 	c := client.New(cfg)
 
-	messages := []protocol.Message{
-		protocol.NewMessage("user", "Hello"),
-	}
+	messages := protocol.InitMessages("user", "Hello")
 	req := request.NewChat(provider, mdl, messages, map[string]any{})
 
 	_, err = c.Execute(context.Background(), req)

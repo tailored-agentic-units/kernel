@@ -37,7 +37,7 @@ kernel/
 ├── tools/              # Tool execution: global registry with Register, Execute, List
 ├── session/            # Conversation management: Session interface, in-memory implementation
 ├── mcp/                # MCP client (skeleton)
-├── kernel/             # Runtime loop + ConnectRPC composition (skeleton)
+├── kernel/             # Agent runtime loop with config-driven initialization
 ├── rpc/                # ConnectRPC infrastructure (proto, buf configs, generated code)
 ├── cmd/                # Entry points (kernel, prompt-agent)
 ├── tests/              # Kernel-wide integration tests
@@ -60,6 +60,8 @@ Level 7: orchestrate/workflows
 
 Foundation (Level 0 — depend only on core/protocol):
   memory, tools, session
+
+Level 8: kernel (depends on agent, session, memory, tools, core)
 ```
 
 ## Design Principles
@@ -104,6 +106,18 @@ Project knowledge artifacts stored in `.claude/context/`:
 | `reviews/` | Project review reports | `[YYYY-MM-DD]-[scope].md` |
 
 Each directory has a `.archive/` subdirectory for completed documents. Directories are created on demand.
+
+## Task Session: Documentation Review
+
+During a `tau:dev-workflow` task execution session, Phase 7 (Documentation) must include a review of project context documents for any revisions necessitated by the implementation. Check the following files and update any stale descriptions, statuses, or references:
+
+- `_project/README.md` — subsystem topology statuses, known gaps, build order descriptions
+- `_project/objective.md` — sub-issue statuses
+- `README.md` — subsystem descriptions
+- `.claude/CLAUDE.md` — project structure, dependency hierarchy
+- `.claude/skills/kernel-dev/SKILL.md` — package responsibilities, dependency hierarchy, extension patterns
+
+This review happens before Phase 8 (Closeout) to ensure all project documentation stays consistent with the codebase.
 
 ## Session Continuity
 

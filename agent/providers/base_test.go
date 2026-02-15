@@ -45,9 +45,7 @@ func TestBaseProvider_Marshal_Chat(t *testing.T) {
 
 	chatData := &providers.ChatData{
 		Model: "gpt-4",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "Hello"),
-		},
+		Messages: protocol.InitMessages("user", "Hello"),
 		Options: map[string]any{
 			"temperature": 0.7,
 		},
@@ -85,9 +83,7 @@ func TestBaseProvider_Marshal_Vision(t *testing.T) {
 
 	visionData := &providers.VisionData{
 		Model: "gpt-4-vision",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "What is in this image?"),
-		},
+		Messages: protocol.InitMessages("user", "What is in this image?"),
 		Images: []string{"https://example.com/image.jpg"},
 		Options: map[string]any{
 			"max_tokens": 1024,
@@ -118,9 +114,7 @@ func TestBaseProvider_Marshal_Tools(t *testing.T) {
 
 	toolsData := &providers.ToolsData{
 		Model: "gpt-4",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "What's the weather?"),
-		},
+		Messages: protocol.InitMessages("user", "What's the weather?"),
 		Tools: []protocol.Tool{
 			{
 				Name:        "get_weather",

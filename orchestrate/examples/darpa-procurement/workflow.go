@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/core/response"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
 )
-
 
 func BuildWorkflow(wc *WorkflowConfig, registry *AgentRegistry) (state.StateGraph, error) {
 	graphConfig := config.GraphConfig{
@@ -124,7 +124,9 @@ Provide your response in your directed JSON format.`,
 			project.Description,
 			project.ComponentCount())
 
-		response, err := registry.ResearchDirector.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := registry.ResearchDirector.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("research director failed: %w", err)
 		}
@@ -179,7 +181,9 @@ Provide your response in your directed JSON format.`,
 			request.Components,
 			request.Justification)
 
-		response, err := registry.CostAnalyst.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := registry.CostAnalyst.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("cost analyst failed: %w", err)
 		}
@@ -238,7 +242,9 @@ Provide your response in your directed JSON format.`,
 			request.TechnicalReqs,
 			request.Components)
 
-		response, err := registry.ProcurementSpecialist.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := registry.ProcurementSpecialist.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("procurement specialist failed: %w", err)
 		}
@@ -306,8 +312,8 @@ Provide your response in your directed JSON format.`,
 		}
 
 		type AnalysisResult struct {
-			Name       string
-			Validation *BudgetValidation
+			Name         string
+			Validation   *BudgetValidation
 			Optimization *CostOptimization
 		}
 
@@ -317,7 +323,10 @@ Provide your response in your directed JSON format.`,
 
 			switch task.Name {
 			case "budget":
-				resp, err = registry.BudgetAnalyst.Chat(ctx, task.Prompt)
+
+				messages := protocol.InitMessages(protocol.RoleUser, task.Prompt)
+
+				resp, err = registry.BudgetAnalyst.Chat(ctx, messages)
 				if err != nil {
 					return AnalysisResult{}, fmt.Errorf("budget analyst failed: %w", err)
 				}
@@ -328,7 +337,9 @@ Provide your response in your directed JSON format.`,
 				return AnalysisResult{Name: "budget", Validation: &validation}, nil
 
 			case "optimizer":
-				resp, err = registry.CostOptimizer.Chat(ctx, task.Prompt)
+				messages := protocol.InitMessages(protocol.RoleUser, task.Prompt)
+
+				resp, err = registry.CostOptimizer.Chat(ctx, messages)
 				if err != nil {
 					return AnalysisResult{}, fmt.Errorf("cost optimizer failed: %w", err)
 				}
@@ -478,7 +489,10 @@ Provide your response in your directed JSON format.`,
 
 	processor := func(ctx context.Context, task LegalTask) (LegalReview, error) {
 		reviewer := registry.LegalReviewers[task.ReviewerIndex]
-		response, err := reviewer.Chat(ctx, legalPrompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, legalPrompt)
+
+		response, err := reviewer.Chat(ctx, messages)
 		if err != nil {
 			return LegalReview{}, fmt.Errorf("legal reviewer %d failed: %w", task.ReviewerIndex+1, err)
 		}
@@ -537,7 +551,9 @@ Provide your response in your directed JSON format.`,
 			cost,
 			request.ProjectSummary)
 
-		response, err := registry.SecurityOfficer.Chat(ctx, securityPrompt)
+		messages := protocol.InitMessages(protocol.RoleUser, securityPrompt)
+
+		response, err := registry.SecurityOfficer.Chat(ctx, messages)
 		if err != nil {
 			return newState, fmt.Errorf("security officer failed: %w", err)
 		}
@@ -564,7 +580,7 @@ Provide your response in your directed JSON format.`,
 }
 
 func routeToExecutive(ctx context.Context, s state.State, executive interface {
-	Chat(context.Context, string, ...map[string]any) (*response.ChatResponse, error)
+	Chat(context.Context, []protocol.Message, ...map[string]any) (*response.ChatResponse, error)
 }, title string, cost int, route string) (state.State, error) {
 	fmt.Printf("→ Routing to %s for final approval (route: %s)...\n", title, route)
 
@@ -595,7 +611,9 @@ Provide justification for your decision.`,
 		request.ProjectSummary,
 		request.Justification)
 
-	response, err := executive.Chat(ctx, prompt)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	response, err := executive.Chat(ctx, messages)
 	if err != nil {
 		return s, fmt.Errorf("%s approval failed: %w", title, err)
 	}

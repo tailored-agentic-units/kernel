@@ -65,7 +65,7 @@ func NewStreamingChatAgent(id string, chunks []string) *MockAgent {
 
 // NewToolsAgent creates a MockAgent configured for tool calling.
 // Returns tool calls in the Tools response.
-func NewToolsAgent(id string, toolCalls []response.ToolCall) *MockAgent {
+func NewToolsAgent(id string, toolCalls []protocol.ToolCall) *MockAgent {
 	toolsResponse := &response.ToolsResponse{
 		Model: "mock-model",
 	}
@@ -74,7 +74,7 @@ func NewToolsAgent(id string, toolCalls []response.ToolCall) *MockAgent {
 		Message struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"message"`
 		FinishReason string `json:"finish_reason,omitempty"`
 	}{
@@ -82,7 +82,7 @@ func NewToolsAgent(id string, toolCalls []response.ToolCall) *MockAgent {
 		Message: struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		}{
 			Role:      "assistant",
 			Content:   "",
@@ -158,7 +158,7 @@ func NewMultiProtocolAgent(id string) *MockAgent {
 		Message struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"message"`
 		FinishReason string `json:"finish_reason,omitempty"`
 	}{
@@ -166,11 +166,11 @@ func NewMultiProtocolAgent(id string) *MockAgent {
 		Message: struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		}{
 			Role:      "assistant",
 			Content:   "",
-			ToolCalls: []response.ToolCall{},
+			ToolCalls: []protocol.ToolCall{},
 		},
 	})
 

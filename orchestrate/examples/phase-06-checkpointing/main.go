@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 var (
@@ -86,7 +87,10 @@ Keep responses to 1-2 sentences focusing on key findings or actions.`
 
 		datasetName, _ := s.Get("dataset")
 		prompt := fmt.Sprintf("Describe the key characteristics of the '%s' dataset being ingested.", datasetName)
-		response, err := dataAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := dataAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("ingestion failed: %w", err)
 		}
@@ -105,7 +109,10 @@ Keep responses to 1-2 sentences focusing on key findings or actions.`
 
 		characteristics, _ := s.Get("characteristics")
 		prompt := fmt.Sprintf("What preprocessing steps are needed for data with these characteristics: %s", characteristics)
-		response, err := dataAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := dataAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("preprocessing failed: %w", err)
 		}
@@ -133,7 +140,10 @@ Keep responses to 1-2 sentences focusing on key findings or actions.`
 
 		datasetName, _ := s.Get("dataset")
 		prompt := fmt.Sprintf("What statistical insights can be derived from analyzing the '%s' dataset?", datasetName)
-		response, err := dataAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := dataAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("analysis failed: %w", err)
 		}
@@ -152,7 +162,10 @@ Keep responses to 1-2 sentences focusing on key findings or actions.`
 
 		insights, _ := s.Get("insights")
 		prompt := fmt.Sprintf("Summarize these key findings in a report conclusion: %s", insights)
-		response, err := dataAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := dataAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("report generation failed: %w", err)
 		}

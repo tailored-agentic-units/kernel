@@ -13,9 +13,9 @@ description: >
 
 - Adding new LLM providers or protocol support to `agent/`
 - Adding new workflow patterns, observers, or state graph extensions to `orchestrate/`
-- Adding implementation to skeleton packages (mcp, kernel)
+- Adding implementation to skeleton packages (mcp)
 - Extending the memory context pipeline (Store backends, skill loading, agent profiles)
-- Implementing the kernel runtime loop
+- Extending the kernel runtime loop or adding ConnectRPC service implementation
 - Architectural decisions affecting package boundaries
 - Writing tests for any kernel package
 
@@ -39,6 +39,8 @@ Level 9: orchestrate/workflows                (depends on Level 5-8)
 
 Foundation (Level 0 — depend only on core/protocol):
   memory, tools, session
+
+Level 10: kernel (depends on agent, session, memory, tools, core)
 ```
 
 Dependencies only flow downward. Never import a higher-level package from a lower-level one.
@@ -65,6 +67,7 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 | `memory` | Context composition pipeline | `Store`, `Cache`, `Entry`, `NewFileStore`, `NewCache` |
 | `tools` | Tool execution and registry | `Handler`, `Result`, `Register`, `Execute`, `List` |
 | `session` | Conversation management | `Session`, `NewMemorySession` |
+| `kernel` | Agent runtime loop | `Kernel`, `Config`, `Result`, `ToolExecutor` |
 
 ## Extension Patterns
 

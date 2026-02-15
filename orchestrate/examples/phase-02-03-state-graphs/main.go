@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 func main() {
@@ -89,7 +90,10 @@ Always respond in 1-2 sentences with specific technical information.`
 		targetEnv, _ := s.Get("target_env")
 
 		prompt := fmt.Sprintf("Analyze deployment plan for application '%s' to '%s' environment. What are the key considerations?", appName, targetEnv)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("plan failed: %w", err)
 		}
@@ -106,7 +110,10 @@ Always respond in 1-2 sentences with specific technical information.`
 		appName, _ := s.Get("app_name")
 
 		prompt := fmt.Sprintf("What artifacts should be built for '%s' application deployment? List 2-3 key artifacts.", appName)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("build failed: %w", err)
 		}
@@ -128,7 +135,10 @@ Always respond in 1-2 sentences with specific technical information.`
 		attempts := retryCount.(int)
 
 		prompt := fmt.Sprintf("Evaluate test results for deployment (attempt %d). Should tests pass (yes) or need fixes (no)?", attempts+1)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("test execution failed: %w", err)
 		}
@@ -151,7 +161,10 @@ Always respond in 1-2 sentences with specific technical information.`
 
 		testResult, _ := s.Get("test_result")
 		prompt := fmt.Sprintf("Test failed: %s. What fix should be applied (attempt %d)?", testResult, attempts)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("fix failed: %w", err)
 		}
@@ -169,7 +182,10 @@ Always respond in 1-2 sentences with specific technical information.`
 		artifacts, _ := s.Get("artifacts")
 
 		prompt := fmt.Sprintf("Confirm deployment to '%s' with artifacts: %s. Provide deployment confirmation.", targetEnv, artifacts)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("deployment failed: %w", err)
 		}
@@ -186,7 +202,10 @@ Always respond in 1-2 sentences with specific technical information.`
 		retryCount, _ := s.Get("retry_count")
 
 		prompt := fmt.Sprintf("Deployment failed after %d attempts. Describe rollback procedure.", retryCount)
-		response, err := deploymentAgent.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := deploymentAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("rollback failed: %w", err)
 		}

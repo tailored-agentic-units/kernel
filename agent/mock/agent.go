@@ -159,12 +159,12 @@ func (m *MockAgent) Model() *model.Model {
 }
 
 // Chat returns the predetermined chat response.
-func (m *MockAgent) Chat(ctx context.Context, prompt string, opts ...map[string]any) (*response.ChatResponse, error) {
+func (m *MockAgent) Chat(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (*response.ChatResponse, error) {
 	return m.chatResponse, m.chatError
 }
 
 // ChatStream returns a channel with predetermined streaming chunks.
-func (m *MockAgent) ChatStream(ctx context.Context, prompt string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+func (m *MockAgent) ChatStream(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
 	if m.streamError != nil {
 		return nil, m.streamError
 	}
@@ -179,12 +179,12 @@ func (m *MockAgent) ChatStream(ctx context.Context, prompt string, opts ...map[s
 }
 
 // Vision returns the predetermined vision response.
-func (m *MockAgent) Vision(ctx context.Context, prompt string, images []string, opts ...map[string]any) (*response.ChatResponse, error) {
+func (m *MockAgent) Vision(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (*response.ChatResponse, error) {
 	return m.visionResponse, m.visionError
 }
 
 // VisionStream returns a channel with predetermined streaming chunks.
-func (m *MockAgent) VisionStream(ctx context.Context, prompt string, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+func (m *MockAgent) VisionStream(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
 	if m.streamError != nil {
 		return nil, m.streamError
 	}
@@ -199,7 +199,7 @@ func (m *MockAgent) VisionStream(ctx context.Context, prompt string, images []st
 }
 
 // Tools returns the predetermined tools response.
-func (m *MockAgent) Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
+func (m *MockAgent) Tools(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
 	return m.toolsResponse, m.toolsError
 }
 

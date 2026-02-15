@@ -94,7 +94,9 @@ func main() {
 }
 
 func executeChat(ctx context.Context, agent agent.Agent, prompt string) {
-	response, err := agent.Chat(ctx, prompt)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	response, err := agent.Chat(ctx, messages)
 	if err != nil {
 		log.Fatalf("Chat failed: %v", err)
 	}
@@ -110,7 +112,9 @@ func executeChat(ctx context.Context, agent agent.Agent, prompt string) {
 }
 
 func executeChatStream(ctx context.Context, agent agent.Agent, prompt string) {
-	stream, err := agent.ChatStream(ctx, prompt)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	stream, err := agent.ChatStream(ctx, messages)
 	if err != nil {
 		log.Fatalf("ChatStream failed: %v", err)
 	}
@@ -125,7 +129,9 @@ func executeChatStream(ctx context.Context, agent agent.Agent, prompt string) {
 }
 
 func executeVision(ctx context.Context, agent agent.Agent, prompt string, images []string) {
-	response, err := agent.Vision(ctx, prompt, images)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	response, err := agent.Vision(ctx, messages, images)
 	if err != nil {
 		log.Fatalf("Vision failed: %v", err)
 	}
@@ -141,7 +147,9 @@ func executeVision(ctx context.Context, agent agent.Agent, prompt string, images
 }
 
 func executeVisionStream(ctx context.Context, agent agent.Agent, prompt string, images []string) {
-	stream, err := agent.VisionStream(ctx, prompt, images)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	stream, err := agent.VisionStream(ctx, messages, images)
 	if err != nil {
 		log.Fatalf("VisionStream failed: %v", err)
 	}
@@ -158,7 +166,9 @@ func executeVisionStream(ctx context.Context, agent agent.Agent, prompt string, 
 }
 
 func executeTools(ctx context.Context, agent agent.Agent, prompt string, tools []protocol.Tool) {
-	response, err := agent.Tools(ctx, prompt, tools)
+	messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+	response, err := agent.Tools(ctx, messages, tools)
 	if err != nil {
 		log.Fatalf("Tools failed: %v", err)
 	}
@@ -173,7 +183,7 @@ func executeTools(ctx context.Context, agent agent.Agent, prompt string, tools [
 		if len(message.ToolCalls) > 0 {
 			fmt.Printf("\nTool Calls:\n")
 			for _, toolCall := range message.ToolCalls {
-				fmt.Printf("  - %s(%s)\n", toolCall.Function.Name, toolCall.Function.Arguments)
+				fmt.Printf("  - %s(%s)\n", toolCall.Name, toolCall.Arguments)
 			}
 		}
 	}

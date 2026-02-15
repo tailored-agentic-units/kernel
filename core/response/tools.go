@@ -3,6 +3,8 @@ package response
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 )
 
 // ToolsResponse represents the response from a tools (function calling) protocol request.
@@ -15,28 +17,13 @@ type ToolsResponse struct {
 	Choices []struct {
 		Index   int `json:"index"`
 		Message struct {
-			Role      string     `json:"role"`
-			Content   string     `json:"content"`
-			ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+			Role      string              `json:"role"`
+			Content   string              `json:"content"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"message"`
 		FinishReason string `json:"finish_reason,omitempty"`
 	} `json:"choices"`
 	Usage *TokenUsage `json:"usage,omitempty"`
-}
-
-// ToolCall represents a function call requested by the model.
-// Contains the call ID, type, and function details.
-type ToolCall struct {
-	ID       string           `json:"id"`
-	Type     string           `json:"type"`
-	Function ToolCallFunction `json:"function"`
-}
-
-// ToolCallFunction contains the details of a function to be called.
-// Name specifies the function name, and Arguments contains JSON-encoded parameters.
-type ToolCallFunction struct {
-	Name      string `json:"name"`
-	Arguments string `json:"arguments"`
 }
 
 // ParseTools parses a tools response from JSON bytes.

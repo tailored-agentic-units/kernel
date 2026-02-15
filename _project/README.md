@@ -42,12 +42,12 @@ Extension ecosystem (external services connecting through the interface):
 | **core** | Foundational types: Protocol, Message, Response, Config, Model | uuid | Complete |
 | **agent** | LLM client: Agent, Client, Provider, Request, Mock | core | Complete |
 | **orchestrate** | Coordination: Hub, State, Workflows, Observability, Checkpoint | agent | Complete |
-| **memory** | Persistent memory: bootstrap loading, working memory, structured notes | *(none)* | Skeleton |
-| **tools** | Tool system: execution interface, registry, permissions, built-in tools | core | Skeleton |
-| **session** | Conversation management: message history, context window, compaction | core | Interface + in-memory |
+| **memory** | Persistent memory: Store interface, FileStore, Cache | *(none)* | Complete |
+| **tools** | Tool system: global registry with Register, Execute, List | core | Complete |
+| **session** | Conversation management: Session interface, in-memory implementation | core | Complete |
 | **skills** | Progressive disclosure: SKILL.md discovery, loading, matching | memory | Skeleton |
 | **mcp** | MCP client: transport abstraction, tool discovery, stdio/SSE | tools | Skeleton |
-| **kernel** | Agent runtime: agentic loop, plan mode, environment, composition | all above | Skeleton |
+| **kernel** | Agent runtime: agentic loop, config-driven initialization | all above | Runtime loop |
 
 ## Dependency Hierarchy
 
@@ -80,7 +80,7 @@ Key properties:
 These subsystems can be built in parallel (no cross-dependencies):
 
 1. **memory** — Filesystem-based persistent memory with zero internal dependencies. Bootstrap loading, working memory, structured notes.
-2. **tools** — Tool execution interface, registry, permissions, built-in tools. Depends on core for `response.ToolCall` type only.
+2. **tools** — Tool execution interface, registry, permissions, built-in tools. Depends on core for `protocol.Tool` type only.
 3. **session** — Conversation history management with token tracking and compaction. Depends on core for `protocol.Message` type only.
 
 ### Phase 2 — Integration (builds on Phase 1)
@@ -160,12 +160,6 @@ Models with strong reasoning but limited tool calling:
 - **No `pkg/` prefix**: Packages live directly under their subsystem root
 - **Versioning**: Phase target `v<major>.<minor>.<patch>`, dev pre-release `v<target>-dev.<objective>.<issue>`
 - **Package boundaries**: Enforced by Go's import rules and type system — no repository walls needed
-
-## Known Gaps
-
-One limitation identified in the current codebase, deferred to per-subsystem concept sessions:
-
-1. **Agent methods create fresh messages** — The `Agent` interface methods accept a `prompt string` and internally create a fresh message list. Incompatible with multi-turn conversations where full history must be passed. Deferred to agent subsystem redesign.
 
 ## Principles
 
