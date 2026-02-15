@@ -185,9 +185,7 @@ func TestAzure_PrepareRequest(t *testing.T) {
 
 	chatData := &providers.ChatData{
 		Model: "gpt-4",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "Hello"),
-		},
+		Messages: protocol.InitMessages("user", "Hello"),
 		Options: map[string]any{},
 	}
 
@@ -243,9 +241,7 @@ func TestAzure_PrepareStreamRequest(t *testing.T) {
 
 	chatData := &providers.ChatData{
 		Model: "gpt-4",
-		Messages: []protocol.Message{
-			protocol.NewMessage("user", "Hello"),
-		},
+		Messages: protocol.InitMessages("user", "Hello"),
 		Options: map[string]any{"stream": true},
 	}
 

@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // Role identifies the sender of a conversation message.
 type Role string
 
@@ -11,12 +13,39 @@ const (
 )
 
 // ToolCall represents a tool invocation in conversation history.
-// This is the canonical flat form used across the kernel. Distinct from
-// response.ToolCall, which is a JSON deserialization struct for provider responses.
+// Fields are flat (ID, Name, Arguments) for direct use across the kernel.
+// UnmarshalJSON transparently handles the nested LLM API format
+// (function.name, function.arguments) so provider responses decode correctly.
 type ToolCall struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	Arguments string `json:"arguments"`
+}
+
+// UnmarshalJSON handles both the nested LLM API format ({function: {name, arguments}})
+// and the flat kernel format ({name, arguments}). This allows provider responses to
+// decode directly into the canonical ToolCall type.
+func (tc *ToolCall) UnmarshalJSON(data []byte) error {
+	var nested struct {
+		ID       string `json:"id"`
+		Function struct {
+			Name      string `json:"name"`
+			Arguments string `json:"arguments"`
+		} `json:"function"`
+	}
+	if err := json.Unmarshal(data, &nested); err != nil {
+		return err
+	}
+
+	if nested.Function.Name != "" {
+		tc.ID = nested.ID
+		tc.Name = nested.Function.Name
+		tc.Arguments = nested.Function.Arguments
+		return nil
+	}
+
+	type plain ToolCall
+	return json.Unmarshal(data, (*plain)(tc))
 }
 
 // Message represents a single message in a conversation.
@@ -40,4 +69,10 @@ type Message struct {
 //	msg := protocol.NewMessage(protocol.RoleUser, "Hello, world!")
 func NewMessage(role Role, content any) Message {
 	return Message{Role: role, Content: content}
+}
+
+// InitMessages creates a single-element message slice from a role and content string.
+// Convenience wrapper for the common pattern of initializing a conversation from a prompt.
+func InitMessages(role Role, content string) []Message {
+	return []Message{NewMessage(role, content)}
 }

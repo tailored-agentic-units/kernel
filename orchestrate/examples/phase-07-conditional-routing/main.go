@@ -8,11 +8,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 type Document struct {
@@ -38,8 +39,8 @@ type Review struct {
 }
 
 type Decision struct {
-	Approved      bool
-	Reason        string
+	Approved          bool
+	Reason            string
 	RecommendedChange string
 }
 
@@ -215,7 +216,9 @@ Start response with "APPROVE:" or "REJECT:" followed by reasoning.`,
 		prompt := fmt.Sprintf("Analyze this document:\n\nTitle: %s\n\nContent: %s\n\nProvide your %s analysis.",
 			currentDoc.Title, currentDoc.Content, strings.ToLower(item.atype))
 
-		response, err := item.analyst.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := item.analyst.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("analysis failed: %w", err)
 		}
@@ -269,7 +272,9 @@ Start response with "APPROVE:" or "REJECT:" followed by reasoning.`,
 
 		prompt := "Review this document for approval. Consider prior analyses and provide clear APPROVE or REJECT decision with reasoning."
 
-		response, err := item.reviewer.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := item.reviewer.Chat(ctx, messages)
 		if err != nil {
 			return Review{}, fmt.Errorf("review failed: %w", err)
 		}

@@ -45,7 +45,7 @@ func TestMockAgent_Chat(t *testing.T) {
 		mock.WithChatResponse(expectedResponse, nil),
 	)
 
-	resp, err := agent.Chat(context.Background(), "test")
+	resp, err := agent.Chat(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"))
 
 	if err != nil {
 		t.Fatalf("Chat failed: %v", err)
@@ -78,7 +78,7 @@ func TestMockAgent_Vision(t *testing.T) {
 		mock.WithVisionResponse(expectedResponse, nil),
 	)
 
-	resp, err := agent.Vision(context.Background(), "test", []string{"image.png"})
+	resp, err := agent.Vision(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"), []string{"image.png"})
 
 	if err != nil {
 		t.Fatalf("Vision failed: %v", err)
@@ -98,7 +98,7 @@ func TestMockAgent_Tools(t *testing.T) {
 		Message struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"message"`
 		FinishReason string `json:"finish_reason,omitempty"`
 	}{
@@ -106,18 +106,15 @@ func TestMockAgent_Tools(t *testing.T) {
 		Message: struct {
 			Role      string              `json:"role"`
 			Content   string              `json:"content"`
-			ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		}{
 			Role:    "assistant",
 			Content: "",
-			ToolCalls: []response.ToolCall{
+			ToolCalls: []protocol.ToolCall{
 				{
-					ID:   "call_123",
-					Type: "function",
-					Function: response.ToolCallFunction{
-						Name:      "test_func",
-						Arguments: `{}`,
-					},
+					ID:        "call_123",
+					Name:      "test_func",
+					Arguments: `{}`,
 				},
 			},
 		},
@@ -128,7 +125,7 @@ func TestMockAgent_Tools(t *testing.T) {
 		mock.WithToolsResponse(expectedResponse, nil),
 	)
 
-	resp, err := agent.Tools(context.Background(), "test", nil)
+	resp, err := agent.Tools(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"), nil)
 
 	if err != nil {
 		t.Fatalf("Tools failed: %v", err)
@@ -215,7 +212,7 @@ func TestNewAudioAgent(t *testing.T) {
 func TestNewSimpleChatAgent(t *testing.T) {
 	agent := mock.NewSimpleChatAgent("test-id", "Hello, world!")
 
-	resp, err := agent.Chat(context.Background(), "test")
+	resp, err := agent.Chat(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"))
 
 	if err != nil {
 		t.Fatalf("Chat failed: %v", err)
@@ -229,7 +226,7 @@ func TestNewSimpleChatAgent(t *testing.T) {
 func TestNewStreamingChatAgent(t *testing.T) {
 	agent := mock.NewStreamingChatAgent("test-id", []string{"Hello", ", ", "world!"})
 
-	stream, err := agent.ChatStream(context.Background(), "test")
+	stream, err := agent.ChatStream(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"))
 
 	if err != nil {
 		t.Fatalf("ChatStream failed: %v", err)

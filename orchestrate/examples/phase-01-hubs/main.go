@@ -8,11 +8,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/hub"
 	"github.com/tailored-agentic-units/kernel/orchestrate/messaging"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 func main() {
@@ -151,7 +152,10 @@ Respond concisely in 1-2 sentences as flight engineer.`,
 	// EVA Specialist 1 handler
 	evaSpec1Handler := func(ctx context.Context, msg *messaging.Message, msgCtx *hub.MessageContext) (*messaging.Message, error) {
 		prompt := fmt.Sprintf("%v", msg.Data)
-		response, err := evaSpec1.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := evaSpec1.Chat(ctx, messages)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +169,10 @@ Respond concisely in 1-2 sentences as flight engineer.`,
 	// EVA Specialist 2 handler
 	evaSpec2Handler := func(ctx context.Context, msg *messaging.Message, msgCtx *hub.MessageContext) (*messaging.Message, error) {
 		prompt := fmt.Sprintf("%v", msg.Data)
-		response, err := evaSpec2.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := evaSpec2.Chat(ctx, messages)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +186,10 @@ Respond concisely in 1-2 sentences as flight engineer.`,
 	// Mission Commander handler
 	commanderHandler := func(ctx context.Context, msg *messaging.Message, msgCtx *hub.MessageContext) (*messaging.Message, error) {
 		prompt := fmt.Sprintf("In %s: %v", msgCtx.HubName, msg.Data)
-		response, err := commander.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := commander.Chat(ctx, messages)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +203,10 @@ Respond concisely in 1-2 sentences as flight engineer.`,
 	// Flight Engineer handler
 	flightEngHandler := func(ctx context.Context, msg *messaging.Message, msgCtx *hub.MessageContext) (*messaging.Message, error) {
 		prompt := fmt.Sprintf("%v", msg.Data)
-		response, err := flightEng.Chat(ctx, prompt)
+
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := flightEng.Chat(ctx, messages)
 		if err != nil {
 			return nil, err
 		}

@@ -258,8 +258,8 @@ func TestToolsResponse_Unmarshal(t *testing.T) {
 		t.Errorf("got tool call ID %q, want %q", toolCall.ID, "call_123")
 	}
 
-	if toolCall.Function.Name != "get_weather" {
-		t.Errorf("got function name %q, want %q", toolCall.Function.Name, "get_weather")
+	if toolCall.Name != "get_weather" {
+		t.Errorf("got function name %q, want %q", toolCall.Name, "get_weather")
 	}
 }
 

@@ -238,6 +238,128 @@ func TestMessage_JSON_IncludesToolFields(t *testing.T) {
 	}
 }
 
+func TestToolCall_UnmarshalJSON_NestedFormat(t *testing.T) {
+	data := `{
+		"id": "call_123",
+		"type": "function",
+		"function": {
+			"name": "get_weather",
+			"arguments": "{\"location\":\"Boston\"}"
+		}
+	}`
+
+	var tc protocol.ToolCall
+	if err := json.Unmarshal([]byte(data), &tc); err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+
+	if tc.ID != "call_123" {
+		t.Errorf("got ID %q, want %q", tc.ID, "call_123")
+	}
+	if tc.Name != "get_weather" {
+		t.Errorf("got Name %q, want %q", tc.Name, "get_weather")
+	}
+	if tc.Arguments != `{"location":"Boston"}` {
+		t.Errorf("got Arguments %q, want %q", tc.Arguments, `{"location":"Boston"}`)
+	}
+}
+
+func TestToolCall_UnmarshalJSON_FlatFormat(t *testing.T) {
+	data := `{
+		"id": "call_456",
+		"name": "search",
+		"arguments": "{\"query\":\"test\"}"
+	}`
+
+	var tc protocol.ToolCall
+	if err := json.Unmarshal([]byte(data), &tc); err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+
+	if tc.ID != "call_456" {
+		t.Errorf("got ID %q, want %q", tc.ID, "call_456")
+	}
+	if tc.Name != "search" {
+		t.Errorf("got Name %q, want %q", tc.Name, "search")
+	}
+	if tc.Arguments != `{"query":"test"}` {
+		t.Errorf("got Arguments %q, want %q", tc.Arguments, `{"query":"test"}`)
+	}
+}
+
+func TestToolCall_UnmarshalJSON_InvalidJSON(t *testing.T) {
+	var tc protocol.ToolCall
+	err := json.Unmarshal([]byte(`{invalid}`), &tc)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON, got nil")
+	}
+}
+
+func TestToolCall_UnmarshalJSON_EmptyObject(t *testing.T) {
+	var tc protocol.ToolCall
+	if err := json.Unmarshal([]byte(`{}`), &tc); err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+
+	if tc.ID != "" || tc.Name != "" || tc.Arguments != "" {
+		t.Errorf("expected empty ToolCall, got %+v", tc)
+	}
+}
+
+func TestToolCall_UnmarshalJSON_InArray(t *testing.T) {
+	data := `[
+		{
+			"id": "call_1",
+			"type": "function",
+			"function": {
+				"name": "fn_a",
+				"arguments": "{}"
+			}
+		},
+		{
+			"id": "call_2",
+			"name": "fn_b",
+			"arguments": "{\"x\":1}"
+		}
+	]`
+
+	var calls []protocol.ToolCall
+	if err := json.Unmarshal([]byte(data), &calls); err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+
+	if len(calls) != 2 {
+		t.Fatalf("got %d calls, want 2", len(calls))
+	}
+
+	if calls[0].Name != "fn_a" {
+		t.Errorf("call[0] Name = %q, want %q", calls[0].Name, "fn_a")
+	}
+	if calls[1].Name != "fn_b" {
+		t.Errorf("call[1] Name = %q, want %q", calls[1].Name, "fn_b")
+	}
+}
+
+func TestInitMessages(t *testing.T) {
+	messages := protocol.InitMessages(protocol.RoleUser, "Hello")
+
+	if len(messages) != 1 {
+		t.Fatalf("got %d messages, want 1", len(messages))
+	}
+
+	if messages[0].Role != protocol.RoleUser {
+		t.Errorf("got role %q, want %q", messages[0].Role, protocol.RoleUser)
+	}
+
+	content, ok := messages[0].Content.(string)
+	if !ok {
+		t.Fatalf("content is not string: %T", messages[0].Content)
+	}
+	if content != "Hello" {
+		t.Errorf("got content %q, want %q", content, "Hello")
+	}
+}
+
 func TestNewMessage_Roles(t *testing.T) {
 	tests := []struct {
 		name string

@@ -8,12 +8,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/agent"
+	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
 	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
-	"github.com/tailored-agentic-units/kernel/agent"
-	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 )
 
 type PaperSection struct {
@@ -161,7 +162,9 @@ conditions. The protocol is ready for testnet deployment.`,
 			return s, fmt.Errorf("unknown section: %s", sectionName)
 		}
 
-		response, err := analysisAgent.Chat(ctx, prompt)
+		messages := protocol.InitMessages(protocol.RoleUser, prompt)
+
+		response, err := analysisAgent.Chat(ctx, messages)
 		if err != nil {
 			return s, fmt.Errorf("analysis failed for %s: %w", sectionName, err)
 		}
@@ -279,7 +282,7 @@ conditions. The protocol is ready for testnet deployment.`,
 	fmt.Printf("    Duration: %v\n", duration.Round(time.Millisecond))
 	fmt.Printf("    Steps Completed: %d/%d\n", result.Steps, totalSteps)
 	fmt.Printf("    Intermediate States Captured: %d\n", len(result.Intermediate))
-	fmt.Printf("    Average Time per Step: %v\n", (duration/time.Duration(result.Steps)).Round(time.Millisecond))
+	fmt.Printf("    Average Time per Step: %v\n", (duration / time.Duration(result.Steps)).Round(time.Millisecond))
 	fmt.Println()
 
 	fmt.Println("=== Research Paper Analysis Complete ===")

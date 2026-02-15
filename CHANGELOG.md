@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.1.0-dev.1.14
+
+### kernel
+
+- Add `Kernel` runtime loop with config-driven initialization and observe/think/act/repeat cycle (#14)
+- Add `Config`, `DefaultConfig`, `Merge`, `LoadConfig` for kernel configuration (#14)
+- Add `Result`, `ToolCallRecord`, `ToolExecutor` interface, and functional options (#14)
+- Add `ErrMaxIterations` for loop budget exhaustion (#14)
+
+### core
+
+- Consolidate `response.ToolCall` into `protocol.ToolCall` with custom `UnmarshalJSON` for nested LLM format (#14)
+- Add `protocol.InitMessages` convenience wrapper for single-prompt message initialization (#14)
+- Evolve `Agent` interface: conversation methods accept `[]protocol.Message` instead of `prompt string` (#14)
+
+### session
+
+- Add `Config`, `DefaultConfig`, `Merge`, `New` for config-driven session creation (#14)
+
+### memory
+
+- Add `Config`, `DefaultConfig`, `Merge`, `NewStore` for config-driven store creation (#14)
+
 ## v0.1.0-dev.1.13
 
 ### memory

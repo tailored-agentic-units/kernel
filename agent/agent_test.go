@@ -147,7 +147,7 @@ func TestAgent_Chat(t *testing.T) {
 		t.Fatalf("New failed: %v", err)
 	}
 
-	resp, err := a.Chat(context.Background(), "Hello")
+	resp, err := a.Chat(context.Background(), protocol.InitMessages(protocol.RoleUser, "Hello"))
 	if err != nil {
 		t.Fatalf("Chat failed: %v", err)
 	}
@@ -212,7 +212,7 @@ func TestAgent_Vision(t *testing.T) {
 	}
 
 	images := []string{"data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="}
-	resp, err := a.Vision(context.Background(), "What's in this image?", images)
+	resp, err := a.Vision(context.Background(), protocol.InitMessages(protocol.RoleUser, "What's in this image?"), images)
 	if err != nil {
 		t.Fatalf("Vision failed: %v", err)
 	}
@@ -236,7 +236,7 @@ func TestAgent_Tools(t *testing.T) {
 			Message struct {
 				Role      string              `json:"role"`
 				Content   string              `json:"content"`
-				ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			} `json:"message"`
 			FinishReason string `json:"finish_reason,omitempty"`
 		}{
@@ -244,18 +244,15 @@ func TestAgent_Tools(t *testing.T) {
 			Message: struct {
 				Role      string              `json:"role"`
 				Content   string              `json:"content"`
-				ToolCalls []response.ToolCall `json:"tool_calls,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			}{
 				Role:    "assistant",
 				Content: "",
-				ToolCalls: []response.ToolCall{
+				ToolCalls: []protocol.ToolCall{
 					{
-						ID:   "call_123",
-						Type: "function",
-						Function: response.ToolCallFunction{
-							Name:      "get_weather",
-							Arguments: `{"location":"Boston"}`,
-						},
+						ID:        "call_123",
+						Name:      "get_weather",
+						Arguments: `{"location":"Boston"}`,
 					},
 				},
 			},
@@ -308,7 +305,7 @@ func TestAgent_Tools(t *testing.T) {
 		},
 	}
 
-	resp, err := a.Tools(context.Background(), "What's the weather in Boston?", tools)
+	resp, err := a.Tools(context.Background(), protocol.InitMessages(protocol.RoleUser, "What's the weather in Boston?"), tools)
 	if err != nil {
 		t.Fatalf("Tools failed: %v", err)
 	}
@@ -326,8 +323,8 @@ func TestAgent_Tools(t *testing.T) {
 	}
 
 	toolCall := resp.Choices[0].Message.ToolCalls[0]
-	if toolCall.Function.Name != "get_weather" {
-		t.Errorf("got function name %q, want %q", toolCall.Function.Name, "get_weather")
+	if toolCall.Name != "get_weather" {
+		t.Errorf("got function name %q, want %q", toolCall.Name, "get_weather")
 	}
 }
 

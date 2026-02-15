@@ -40,25 +40,25 @@ type Agent interface {
 
 	// Chat executes a chat protocol request with optional system prompt injection.
 	// Returns the parsed chat response or an error.
-	Chat(ctx context.Context, prompt string, opts ...map[string]any) (*response.ChatResponse, error)
+	Chat(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (*response.ChatResponse, error)
 
 	// ChatStream executes a streaming chat protocol request.
 	// Automatically sets stream: true in options.
 	// Returns a channel of streaming chunks or an error.
-	ChatStream(ctx context.Context, prompt string, opts ...map[string]any) (<-chan *response.StreamingChunk, error)
+	ChatStream(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (<-chan *response.StreamingChunk, error)
 
 	// Vision executes a vision protocol request with images.
 	// Images can be URLs or base64-encoded data URIs.
 	// Returns the parsed chat response or an error.
-	Vision(ctx context.Context, prompt string, images []string, opts ...map[string]any) (*response.ChatResponse, error)
+	Vision(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (*response.ChatResponse, error)
 
 	// VisionStream executes a streaming vision protocol request with images.
 	// Returns a channel of streaming chunks or an error.
-	VisionStream(ctx context.Context, prompt string, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error)
+	VisionStream(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error)
 
 	// Tools executes a tools protocol request with function definitions.
 	// Returns the parsed tools response with tool calls or an error.
-	Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error)
+	Tools(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error)
 
 	// Embed executes an embeddings protocol request.
 	// Returns the parsed embeddings response or an error.
@@ -123,7 +123,7 @@ func (a *agent) Model() *model.Model {
 // Initializes messages with system prompt (if configured) and user prompt.
 // Merges model's configured chat options with runtime opts.
 // Returns parsed ChatResponse or error.
-func (a *agent) Chat(ctx context.Context, prompt string, opts ...map[string]any) (*response.ChatResponse, error) {
+func (a *agent) Chat(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (*response.ChatResponse, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Chat, opts...)
 
@@ -146,7 +146,7 @@ func (a *agent) Chat(ctx context.Context, prompt string, opts ...map[string]any)
 // Merges model's configured chat options with runtime opts.
 // Automatically sets stream: true in options.
 // Returns a channel of StreamingChunk or error.
-func (a *agent) ChatStream(ctx context.Context, prompt string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+func (a *agent) ChatStream(ctx context.Context, prompt []protocol.Message, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Chat, opts...)
 	options["stream"] = true
@@ -161,7 +161,7 @@ func (a *agent) ChatStream(ctx context.Context, prompt string, opts ...map[strin
 // Merges model's configured vision options with runtime opts.
 // Extracts vision_options from opts if present, separating them from model options.
 // Returns parsed ChatResponse or error.
-func (a *agent) Vision(ctx context.Context, prompt string, images []string, opts ...map[string]any) (*response.ChatResponse, error) {
+func (a *agent) Vision(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (*response.ChatResponse, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Vision, opts...)
 
@@ -194,7 +194,7 @@ func (a *agent) Vision(ctx context.Context, prompt string, images []string, opts
 // Extracts vision_options from opts if present, separating them from model options.
 // Automatically sets stream: true in options.
 // Returns a channel of StreamingChunk or error.
-func (a *agent) VisionStream(ctx context.Context, prompt string, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+func (a *agent) VisionStream(ctx context.Context, prompt []protocol.Message, images []string, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Vision, opts...)
 	options["stream"] = true
@@ -217,7 +217,7 @@ func (a *agent) VisionStream(ctx context.Context, prompt string, images []string
 // Converts protocol.Tool structs to providers.ToolDefinition format.
 // Merges model's configured tools options with runtime opts.
 // Returns parsed ToolsResponse with tool calls or error.
-func (a *agent) Tools(ctx context.Context, prompt string, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
+func (a *agent) Tools(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error) {
 	messages := a.initMessages(prompt)
 	options := a.mergeOptions(protocol.Tools, opts...)
 
@@ -299,17 +299,12 @@ func (a *agent) mergeOptions(proto protocol.Protocol, opts ...map[string]any) ma
 	return options
 }
 
-// initMessages creates the initial message list with optional system prompt.
-// If system prompt is configured, it's added as the first message.
-// User prompt is always added after system prompt.
-func (a *agent) initMessages(prompt string) []protocol.Message {
-	messages := make([]protocol.Message, 0)
-
-	if a.systemPrompt != "" {
-		messages = append(messages, protocol.NewMessage(protocol.RoleSystem, a.systemPrompt))
+func (a *agent) initMessages(prompt []protocol.Message) []protocol.Message {
+	if a.systemPrompt == "" {
+		return prompt
 	}
-
-	messages = append(messages, protocol.NewMessage(protocol.RoleUser, prompt))
-
-	return messages
+	result := make([]protocol.Message, 0, len(prompt)+1)
+	result = append(result, protocol.NewMessage(protocol.RoleSystem, a.systemPrompt))
+	result = append(result, prompt...)
+	return result
 }
