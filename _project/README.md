@@ -45,7 +45,7 @@ Extension ecosystem (external services connecting through the interface):
 | **tools** | Tool system: global registry with Register, Execute, List | core | Complete |
 | **session** | Conversation management: Session interface, in-memory implementation | core | Complete |
 | **mcp** | MCP client: transport abstraction, tool discovery, stdio/SSE | tools | Skeleton |
-| **kernel** | Agent runtime: agentic loop, config-driven initialization | all above | Runtime loop |
+| **kernel** | Agent runtime: agentic loop, config-driven initialization, CLI entry point | all above | Complete |
 
 ## Dependency Hierarchy
 

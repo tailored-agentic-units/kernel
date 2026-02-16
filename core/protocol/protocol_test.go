@@ -340,6 +340,78 @@ func TestToolCall_UnmarshalJSON_InArray(t *testing.T) {
 	}
 }
 
+func TestToolCall_MarshalJSON_NestedFormat(t *testing.T) {
+	tc := protocol.ToolCall{
+		ID:        "call_789",
+		Name:      "get_weather",
+		Arguments: `{"location":"Boston"}`,
+	}
+
+	data, err := json.Marshal(tc)
+	if err != nil {
+		t.Fatalf("MarshalJSON failed: %v", err)
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	if raw["id"] != "call_789" {
+		t.Errorf("got id %v, want %q", raw["id"], "call_789")
+	}
+	if raw["type"] != "function" {
+		t.Errorf("got type %v, want %q", raw["type"], "function")
+	}
+
+	fn, ok := raw["function"].(map[string]any)
+	if !ok {
+		t.Fatalf("function field is not an object: %T", raw["function"])
+	}
+	if fn["name"] != "get_weather" {
+		t.Errorf("got function.name %v, want %q", fn["name"], "get_weather")
+	}
+	if fn["arguments"] != `{"location":"Boston"}` {
+		t.Errorf("got function.arguments %v, want %q", fn["arguments"], `{"location":"Boston"}`)
+	}
+
+	// Verify flat fields are NOT present at top level
+	if _, exists := raw["name"]; exists {
+		t.Error("name should not be at top level in nested format")
+	}
+	if _, exists := raw["arguments"]; exists {
+		t.Error("arguments should not be at top level in nested format")
+	}
+}
+
+func TestToolCall_MarshalJSON_RoundTrip(t *testing.T) {
+	original := protocol.ToolCall{
+		ID:        "call_rt",
+		Name:      "search",
+		Arguments: `{"query":"test","limit":10}`,
+	}
+
+	data, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("MarshalJSON failed: %v", err)
+	}
+
+	var restored protocol.ToolCall
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+
+	if restored.ID != original.ID {
+		t.Errorf("ID: got %q, want %q", restored.ID, original.ID)
+	}
+	if restored.Name != original.Name {
+		t.Errorf("Name: got %q, want %q", restored.Name, original.Name)
+	}
+	if restored.Arguments != original.Arguments {
+		t.Errorf("Arguments: got %q, want %q", restored.Arguments, original.Arguments)
+	}
+}
+
 func TestInitMessages(t *testing.T) {
 	messages := protocol.InitMessages(protocol.RoleUser, "Hello")
 

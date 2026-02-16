@@ -22,6 +22,29 @@ type ToolCall struct {
 	Arguments string `json:"arguments"`
 }
 
+// MarshalJSON serializes to the nested LLM API format ({type, function: {name, arguments}})
+// ensuring round-trip fidelity with UnmarshalJSON for provider communication.
+func (tc ToolCall) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		ID       string `json:"id"`
+		Type     string `json:"type"`
+		Function struct {
+			Name      string `json:"name"`
+			Arguments string `json:"arguments"`
+		} `json:"function"`
+	}{
+		ID:   tc.ID,
+		Type: "function",
+		Function: struct {
+			Name      string `json:"name"`
+			Arguments string `json:"arguments"`
+		}{
+			Name:      tc.Name,
+			Arguments: tc.Arguments,
+		},
+	})
+}
+
 // UnmarshalJSON handles both the nested LLM API format ({function: {name, arguments}})
 // and the flat kernel format ({name, arguments}). This allows provider responses to
 // decode directly into the canonical ToolCall type.

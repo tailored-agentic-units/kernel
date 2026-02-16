@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.0-dev.1.15
+
+### kernel
+
+- Replace `cmd/kernel/main.go` stub with functional CLI entry point (#15)
+- Add built-in tools: `datetime`, `read_file`, `list_directory` (#15)
+- Add seed memory directory at `cmd/kernel/memory/` for system prompt composition (#15)
+- Support unlimited iterations when `maxIterations` is 0 (#15)
+- Add `WithLogger` option with `*slog.Logger` for runtime observability (#15)
+- Add structured log points in `Run` and `buildSystemContent` (#15)
+
+### core
+
+- Add `ToolCall.MarshalJSON` for nested LLM API format round-trip fidelity (#15)
+
 ## v0.1.0-dev.1.14
 
 ### kernel

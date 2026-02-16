@@ -50,7 +50,7 @@ Proto definitions live in `rpc/proto/`, generated code in `rpc/gen/`.
 docker compose up -d
 
 # Run the kernel with a prompt
-go run cmd/kernel/main.go \
+go run ./cmd/kernel/ \
   -config cmd/kernel/agent.ollama.qwen3.json \
   -prompt "What time is it?"
 

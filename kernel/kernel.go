@@ -12,6 +12,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 
 	"github.com/tailored-agentic-units/kernel/agent"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
@@ -78,12 +80,18 @@ func WithMemoryStore(s memory.Store) Option {
 	return func(k *Kernel) { k.store = s }
 }
 
+// WithLogger overrides the default discard logger for runtime observability.
+func WithLogger(l *slog.Logger) Option {
+	return func(k *Kernel) { k.log = l }
+}
+
 // Kernel is the single-agent runtime that executes the agentic loop.
 type Kernel struct {
 	agent         agent.Agent
 	session       session.Session
 	store         memory.Store
 	tools         ToolExecutor
+	log           *slog.Logger
 	maxIterations int
 	systemPrompt  string
 }
@@ -112,6 +120,7 @@ func New(cfg *Config, opts ...Option) (*Kernel, error) {
 		session:       sesh,
 		store:         store,
 		tools:         globalToolExecutor{},
+		log:           slog.New(slog.NewTextHandler(io.Discard, nil)),
 		maxIterations: cfg.MaxIterations,
 		systemPrompt:  cfg.SystemPrompt,
 	}
@@ -125,7 +134,9 @@ func New(cfg *Config, opts ...Option) (*Kernel, error) {
 
 // Run executes the observe/think/act/repeat agentic loop for the given prompt.
 // Returns a Result with the final response, iteration count, and tool call log.
-// Returns ErrMaxIterations if the loop exhausts its iteration budget.
+// When maxIterations is 0, the loop runs until the agent produces a final
+// response or the context is cancelled. Returns ErrMaxIterations if a non-zero
+// iteration budget is exhausted.
 func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 	k.session.AddMessage(
 		protocol.NewMessage(protocol.RoleUser, prompt),
@@ -138,10 +149,14 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		return result, err
 	}
 
-	for iteration := range k.maxIterations {
+	k.log.Info("run started", "prompt_length", len(prompt), "max_iterations", k.maxIterations, "tools", len(k.tools.List()))
+
+	for iteration := 0; k.maxIterations == 0 || iteration < k.maxIterations; iteration++ {
 		if err := ctx.Err(); err != nil {
 			return result, err
 		}
+
+		k.log.Debug("iteration started", "iteration", iteration+1)
 
 		messages := k.buildMessages(systemContent)
 
@@ -163,6 +178,9 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 			})
 			result.Response = choice.Message.Content
 			result.Iterations = iteration + 1
+
+			k.log.Info("run complete", "iterations", iteration+1, "response_length", len(result.Response))
+
 			return result, nil
 		}
 
@@ -173,6 +191,8 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		})
 
 		for _, tc := range choice.Message.ToolCalls {
+			k.log.Debug("tool call", "iteration", iteration+1, "name", tc.Name)
+
 			record := ToolCallRecord{
 				Iteration: iteration + 1,
 				ID:        tc.ID,
@@ -211,6 +231,8 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		result.Iterations = iteration + 1
 	}
 
+	k.log.Warn("max iterations reached", "iterations", k.maxIterations)
+
 	return result, ErrMaxIterations
 }
 
@@ -248,6 +270,7 @@ func (k *Kernel) buildSystemContent(ctx context.Context) (string, error) {
 	}
 
 	for _, entry := range entries {
+		k.log.Debug("memory loaded", "key", entry.Key, "bytes", len(entry.Value))
 		content += "\n\n" + string(entry.Value)
 	}
 

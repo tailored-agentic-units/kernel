@@ -1,9 +1,12 @@
 package kernel_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
+	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -682,6 +685,96 @@ func TestRun_ToolCallRecordFields(t *testing.T) {
 	}
 	if tc.IsError {
 		t.Error("expected IsError false")
+	}
+}
+
+func TestRun_UnlimitedIterations(t *testing.T) {
+	// With maxIterations=0, the loop should run until the agent produces a
+	// final response rather than stopping after zero iterations.
+	agent := newSequentialAgent(
+		[]*response.ToolsResponse{
+			makeToolsResponse([]protocol.ToolCall{
+				{ID: "call_1", Name: "step", Arguments: `{}`},
+			}),
+			makeToolsResponse([]protocol.ToolCall{
+				{ID: "call_2", Name: "step", Arguments: `{}`},
+			}),
+			makeToolsResponse([]protocol.ToolCall{
+				{ID: "call_3", Name: "step", Arguments: `{}`},
+			}),
+			makeFinalResponse("finished after 4 iterations"),
+		},
+		nil,
+	)
+
+	executor := &mockToolExecutor{
+		handler: func(ctx context.Context, name string, args json.RawMessage) (tools.Result, error) {
+			return tools.Result{Content: "ok"}, nil
+		},
+	}
+
+	cfg := minimalConfig()
+	cfg.MaxIterations = 0
+
+	k, err := kernel.New(cfg,
+		kernel.WithAgent(agent),
+		kernel.WithSession(newTestSession()),
+		kernel.WithToolExecutor(executor),
+	)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+
+	result, err := k.Run(context.Background(), "Run until done")
+	if err != nil {
+		t.Fatalf("Run failed: %v", err)
+	}
+
+	if result.Response != "finished after 4 iterations" {
+		t.Errorf("got response %q, want %q", result.Response, "finished after 4 iterations")
+	}
+
+	if result.Iterations != 4 {
+		t.Errorf("got %d iterations, want 4", result.Iterations)
+	}
+
+	if len(result.ToolCalls) != 3 {
+		t.Errorf("got %d tool calls, want 3", len(result.ToolCalls))
+	}
+}
+
+func TestWithLogger(t *testing.T) {
+	agent := newSequentialAgent(
+		[]*response.ToolsResponse{makeFinalResponse("ok")},
+		nil,
+	)
+
+	var buf bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	k, err := kernel.New(minimalConfig(),
+		kernel.WithAgent(agent),
+		kernel.WithSession(newTestSession()),
+		kernel.WithToolExecutor(&mockToolExecutor{}),
+		kernel.WithLogger(logger),
+	)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+
+	_, err = k.Run(context.Background(), "Hello")
+	if err != nil {
+		t.Fatalf("Run failed: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "run started") {
+		t.Error("expected 'run started' log entry")
+	}
+	if !strings.Contains(output, "run complete") {
+		t.Error("expected 'run complete' log entry")
 	}
 }
 

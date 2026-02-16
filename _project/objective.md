@@ -15,7 +15,7 @@ Implement the agentic processing loop — the core observe/think/act/repeat cycl
 | 12 | Tool registry interface and execution | Closed |
 | 13 | Memory store interface and filesystem implementation | Closed |
 | 14 | Kernel runtime loop | Closed |
-| 15 | Runnable kernel CLI with built-in tools | Open |
+| 15 | Runnable kernel CLI with built-in tools | Closed |
 
 ## Architecture Decisions
 
