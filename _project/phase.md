@@ -10,8 +10,8 @@ Implement the foundation subsystems that have no dependencies on each other: mem
 
 | # | Objective | Status |
 |---|-----------|--------|
-| 1 | Kernel Core Loop | In Progress |
-| 2 | Kernel ConnectRPC Interface | Planned |
+| 1 | Kernel Core Loop | Complete |
+| 2 | Kernel Interface | In Progress |
 | 3 | Skills and MCP Integration | Planned |
 | 4 | Local Development Mode | Planned |
 
