@@ -15,7 +15,7 @@ github.com/tailored-agentic-units/kernel
 | `core/` | Foundational type vocabulary: protocol constants, response types, configuration, model |
 | `agent/` | LLM communication: agent interface, HTTP client, providers (Ollama, Azure), request construction |
 | `orchestrate/` | Multi-agent coordination: hubs, messaging, state graphs, workflow patterns, observability |
-| `memory/` | Context composition: Store interface, FileStore, session-scoped Cache |
+| `memory/` | Unified context composition: Store interface, FileStore, Cache. Namespaces: `memory/`, `skills/`, `agents/` |
 | `tools/` | Tool execution: global registry with Register, Execute, List |
 | `session/` | Conversation management: Session interface, in-memory implementation |
 | `mcp/` | Model Context Protocol client (under development) |
@@ -46,12 +46,17 @@ Proto definitions live in `rpc/proto/`, generated code in `rpc/gen/`.
 ## Quick Start
 
 ```bash
-# Start Ollama (local LLM)
+# Start Ollama (local LLM with qwen3:8b auto-loaded)
 docker compose up -d
 
-# Run the prompt-agent testing utility
+# Run the kernel with a prompt
+go run cmd/kernel/main.go \
+  -config cmd/kernel/agent.ollama.qwen3.json \
+  -prompt "What time is it?"
+
+# Run the prompt-agent testing utility (direct agent interaction)
 go run cmd/prompt-agent/main.go \
-  -config cmd/prompt-agent/config.ollama.json \
+  -config cmd/prompt-agent/agent.ollama.qwen3.json \
   -prompt "Describe the Go programming language" \
   -stream
 ```

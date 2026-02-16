@@ -1,0 +1,38 @@
+{
+  "agent": {
+    "name": "kernel-agent",
+    "client": {
+      "timeout": "60s",
+      "retry": {
+        "max_retries": 3,
+        "initial_backoff": "1s",
+        "max_backoff": "30s",
+        "backoff_multiplier": 2.0,
+        "jitter": true
+      },
+      "connection_pool_size": 10,
+      "connection_timeout": "9s"
+    },
+    "provider": {
+      "name": "ollama",
+      "base_url": "http://localhost:11434"
+    },
+    "model": {
+      "name": "qwen3:8b",
+      "capabilities": {
+        "chat": {
+          "max_tokens": 4096,
+          "temperature": 0.7,
+          "top_p": 0.95
+        },
+        "tools": {
+          "max_tokens": 4096,
+          "temperature": 0.7,
+          "tool_choice": "auto"
+        }
+      }
+    }
+  },
+  "max_iterations": 10,
+  "system_prompt": "You are a helpful assistant. Use the available tools when they would help answer the user's question."
+}

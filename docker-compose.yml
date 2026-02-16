@@ -16,7 +16,7 @@ services:
     command: >
       "ollama serve &
       sleep 10 &&
-      echo 'Pulling llama3.2:3b model...' &&
-      ollama pull llama3.2:3b &&
+      echo 'Pulling qwen3:8b model...' &&
+      ollama pull qwen3:8b &&
       echo 'Model ready. Ollama server running.' &&
       wait"

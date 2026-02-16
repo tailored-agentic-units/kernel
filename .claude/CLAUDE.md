@@ -14,7 +14,8 @@ TAU (Tailored Agentic Units) kernel — agent runtime with integrated subsystems
 | Validate | `go vet ./...` |
 | Proto lint | `cd rpc && buf lint` |
 | Proto generate | `cd rpc && buf generate` |
-| Prompt (Ollama) | `go run cmd/prompt-agent/main.go -config cmd/prompt-agent/config.ollama.json -prompt "..." -stream` |
+| Kernel (Ollama) | `go run cmd/kernel/main.go -config cmd/kernel/agent.ollama.qwen3.json -prompt "..."` |
+| Prompt (Ollama) | `go run cmd/prompt-agent/main.go -config cmd/prompt-agent/agent.ollama.qwen3.json -prompt "..." -stream` |
 | Ollama | `docker compose up -d` |
 
 ## Module
@@ -33,14 +34,13 @@ kernel/
 ├── core/               # Foundational types: protocol, response, config, model
 ├── agent/              # LLM communication: agent interface, client, providers, request, mock
 ├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
-├── memory/             # Context composition: Store interface, FileStore, Cache with progressive loading
+├── memory/             # Unified context composition: Store, FileStore, Cache. Namespaces: memory/, skills/, agents/
 ├── tools/              # Tool execution: global registry with Register, Execute, List
 ├── session/            # Conversation management: Session interface, in-memory implementation
 ├── mcp/                # MCP client (skeleton)
 ├── kernel/             # Agent runtime loop with config-driven initialization
 ├── rpc/                # ConnectRPC infrastructure (proto, buf configs, generated code)
 ├── cmd/                # Entry points (kernel, prompt-agent)
-├── tests/              # Kernel-wide integration tests
 ├── scripts/            # Infrastructure scripts (Azure)
 ├── .claude/            # Claude Code configuration and skills
 └── .github/            # CI workflows
@@ -105,7 +105,7 @@ Project knowledge artifacts stored in `.claude/context/`:
 | `sessions/` | Session summaries | `[issue-number]-[slug].md` |
 | `reviews/` | Project review reports | `[YYYY-MM-DD]-[scope].md` |
 
-Each directory has a `.archive/` subdirectory for completed documents. Directories are created on demand.
+Concepts, guides, and sessions have `.archive/` subdirectories for completed documents. Reviews are permanent records and are not archived. Directories are created on demand.
 
 ## Task Session: Documentation Review
 

@@ -14,8 +14,7 @@ The kernel consolidates all TAU subsystems into a single Go module:
 - **agent** — LLM communication layer (agent interface, client, providers)
 - **tools** — Tool execution interface, registry, and permissions
 - **session** — Conversation history and context management
-- **memory** — Filesystem-based persistent memory
-- **skills** — Progressive disclosure skill system
+- **memory** — Unified context composition: persistent memory, skills, agent profiles
 - **mcp** — MCP client with transport abstraction
 - **orchestrate** — Multi-agent coordination and workflow patterns
 - **kernel** — Agent runtime: closed-loop processing with ConnectRPC interface
@@ -42,10 +41,9 @@ Extension ecosystem (external services connecting through the interface):
 | **core** | Foundational types: Protocol, Message, Response, Config, Model | uuid | Complete |
 | **agent** | LLM client: Agent, Client, Provider, Request, Mock | core | Complete |
 | **orchestrate** | Coordination: Hub, State, Workflows, Observability, Checkpoint | agent | Complete |
-| **memory** | Persistent memory: Store interface, FileStore, Cache | *(none)* | Complete |
+| **memory** | Unified context composition: Store interface, FileStore, Cache. Namespaces: `memory/`, `skills/`, `agents/` | *(none)* | Complete |
 | **tools** | Tool system: global registry with Register, Execute, List | core | Complete |
 | **session** | Conversation management: Session interface, in-memory implementation | core | Complete |
-| **skills** | Progressive disclosure: SKILL.md discovery, loading, matching | memory | Skeleton |
 | **mcp** | MCP client: transport abstraction, tool discovery, stdio/SSE | tools | Skeleton |
 | **kernel** | Agent runtime: agentic loop, config-driven initialization | all above | Runtime loop |
 
@@ -56,8 +54,7 @@ Extension ecosystem (external services connecting through the interface):
     - **agent** — core
   - **mcp** — tools
     - **tools** — core
-  - **skills** — memory
-    - **memory** — *(no internal dependencies)*
+  - **memory** — *(no internal dependencies)*
   - **session** — core
 - **core** — *(external: uuid)*
 
@@ -85,26 +82,23 @@ These subsystems can be built in parallel (no cross-dependencies):
 
 ### Phase 2 — Integration (builds on Phase 1)
 
-4. **skills** — Progressive disclosure skill system. Depends on memory. Can begin after memory is complete.
-5. **mcp** — MCP client with transport abstraction. Depends on tools. Can begin after tools is complete.
-
-Phase 2 subsystems proceed in parallel (skills depends on memory, mcp depends on tools — no cross-dependency).
+4. **mcp** — MCP client with transport abstraction. Depends on tools. Can begin after tools is complete.
 
 ### Phase 3 — Composition
 
-6. **kernel** — Agentic loop composing all subsystems. Depends on everything above.
+5. **kernel** — Agentic loop composing all subsystems. Depends on everything above.
 
 ```
 Phase 0:  [core + agent + orchestrate]          (complete)
               |
               v
-Phase 1:  [memory]  [tools]  [session]          (parallel)
-              |          |
-              v          v
-Phase 2:  [skills]    [mcp]                     (parallel)
-                  \    /
-                   v  v
-Phase 3:          [kernel]
+Phase 1:  [memory]  [tools]  [session]          (parallel, complete)
+                       |
+                       v
+Phase 2:             [mcp]
+                       |
+                       v
+Phase 3:           [kernel]                     (runtime loop complete)
 ```
 
 ## Model Compatibility
