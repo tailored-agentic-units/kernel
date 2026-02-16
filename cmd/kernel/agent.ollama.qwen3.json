@@ -33,6 +33,9 @@
       }
     }
   },
+  "memory": {
+    "path": "cmd/kernel/memory"
+  },
   "max_iterations": 10,
   "system_prompt": "You are a helpful assistant. Use the available tools when they would help answer the user's question."
 }

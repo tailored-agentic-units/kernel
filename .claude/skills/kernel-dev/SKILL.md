@@ -67,7 +67,7 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 | `memory` | Context composition pipeline | `Store`, `Cache`, `Entry`, `NewFileStore`, `NewCache` |
 | `tools` | Tool execution and registry | `Handler`, `Result`, `Register`, `Execute`, `List` |
 | `session` | Conversation management | `Session`, `NewMemorySession` |
-| `kernel` | Agent runtime loop | `Kernel`, `Config`, `Result`, `ToolExecutor` |
+| `kernel` | Agent runtime loop | `Kernel`, `Config`, `Result`, `ToolExecutor`, `WithLogger` |
 
 ## Extension Patterns
 

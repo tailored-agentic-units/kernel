@@ -14,7 +14,7 @@ TAU (Tailored Agentic Units) kernel — agent runtime with integrated subsystems
 | Validate | `go vet ./...` |
 | Proto lint | `cd rpc && buf lint` |
 | Proto generate | `cd rpc && buf generate` |
-| Kernel (Ollama) | `go run cmd/kernel/main.go -config cmd/kernel/agent.ollama.qwen3.json -prompt "..."` |
+| Kernel (Ollama) | `go run ./cmd/kernel/ -config cmd/kernel/agent.ollama.qwen3.json -prompt "..."` |
 | Prompt (Ollama) | `go run cmd/prompt-agent/main.go -config cmd/prompt-agent/agent.ollama.qwen3.json -prompt "..." -stream` |
 | Ollama | `docker compose up -d` |
 
