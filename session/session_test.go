@@ -43,7 +43,7 @@ func TestSession_AddMessage_And_Messages(t *testing.T) {
 	s := session.NewMemorySession()
 
 	toolCalls := []protocol.ToolCall{
-		{ID: "call_1", Name: "get_weather", Arguments: `{"city":"NYC"}`},
+		protocol.NewToolCall("call_1", "get_weather", `{"city":"NYC"}`),
 	}
 
 	msg := protocol.Message{
@@ -69,8 +69,8 @@ func TestSession_AddMessage_And_Messages(t *testing.T) {
 	if len(got.ToolCalls) != 1 {
 		t.Fatalf("got %d tool calls, want 1", len(got.ToolCalls))
 	}
-	if got.ToolCalls[0].Name != "get_weather" {
-		t.Errorf("got tool call name %q, want %q", got.ToolCalls[0].Name, "get_weather")
+	if got.ToolCalls[0].Function.Name != "get_weather" {
+		t.Errorf("got tool call name %q, want %q", got.ToolCalls[0].Function.Name, "get_weather")
 	}
 }
 
@@ -134,7 +134,7 @@ func TestSession_Messages_ToolCalls(t *testing.T) {
 	s.AddMessage(protocol.Message{
 		Role: protocol.RoleAssistant,
 		ToolCalls: []protocol.ToolCall{
-			{ID: "call_1", Name: "get_weather", Arguments: `{"city":"NYC"}`},
+			protocol.NewToolCall("call_1", "get_weather", `{"city":"NYC"}`),
 		},
 	})
 
@@ -184,20 +184,20 @@ func TestSession_Messages_ToolCalls_DefensiveCopy(t *testing.T) {
 	s.AddMessage(protocol.Message{
 		Role: protocol.RoleAssistant,
 		ToolCalls: []protocol.ToolCall{
-			{ID: "call_1", Name: "original", Arguments: "{}"},
+			protocol.NewToolCall("call_1", "original", "{}"),
 		},
 	})
 
 	msgs := s.Messages()
-	msgs[0].ToolCalls[0].Name = "tampered"
-	msgs[0].ToolCalls = append(msgs[0].ToolCalls, protocol.ToolCall{ID: "call_2", Name: "extra"})
+	msgs[0].ToolCalls[0].Function.Name = "tampered"
+	msgs[0].ToolCalls = append(msgs[0].ToolCalls, protocol.NewToolCall("call_2", "extra", ""))
 
 	original := s.Messages()
 	if len(original[0].ToolCalls) != 1 {
 		t.Fatalf("got %d tool calls, want 1", len(original[0].ToolCalls))
 	}
-	if original[0].ToolCalls[0].Name != "original" {
-		t.Errorf("tool call name was mutated: got %q, want %q", original[0].ToolCalls[0].Name, "original")
+	if original[0].ToolCalls[0].Function.Name != "original" {
+		t.Errorf("tool call name was mutated: got %q, want %q", original[0].ToolCalls[0].Function.Name, "original")
 	}
 }
 

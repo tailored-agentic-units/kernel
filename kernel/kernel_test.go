@@ -183,7 +183,7 @@ func TestRun_SingleToolCall(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_1", Name: "greet", Arguments: `{"name":"world"}`},
+				protocol.NewToolCall("call_1", "greet", `{"name":"world"}`),
 			}),
 			makeFinalResponse("Done: hello world"),
 		},
@@ -224,8 +224,8 @@ func TestRun_SingleToolCall(t *testing.T) {
 	}
 
 	tc := result.ToolCalls[0]
-	if tc.Name != "greet" {
-		t.Errorf("got tool name %q, want %q", tc.Name, "greet")
+	if tc.Function.Name != "greet" {
+		t.Errorf("got tool name %q, want %q", tc.Function.Name, "greet")
 	}
 	if tc.Result != "hello world" {
 		t.Errorf("got tool result %q, want %q", tc.Result, "hello world")
@@ -239,8 +239,8 @@ func TestRun_MultipleToolCalls(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_1", Name: "add", Arguments: `{"a":1,"b":2}`},
-				{ID: "call_2", Name: "add", Arguments: `{"a":3,"b":4}`},
+				protocol.NewToolCall("call_1", "add", `{"a":1,"b":2}`),
+				protocol.NewToolCall("call_2", "add", `{"a":3,"b":4}`),
 			}),
 			makeFinalResponse("3 and 7"),
 		},
@@ -278,7 +278,7 @@ func TestRun_ToolExecutionError(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_1", Name: "fail", Arguments: `{}`},
+				protocol.NewToolCall("call_1", "fail", `{}`),
 			}),
 			makeFinalResponse("I handled the error"),
 		},
@@ -325,7 +325,7 @@ func TestRun_ToolExecutionError(t *testing.T) {
 func TestRun_MaxIterations(t *testing.T) {
 	// Agent always returns tool calls, never a final response
 	infiniteToolCall := makeToolsResponse([]protocol.ToolCall{
-		{ID: "call_loop", Name: "loop", Arguments: `{}`},
+		protocol.NewToolCall("call_loop", "loop", `{}`),
 	})
 
 	responses := make([]*response.ToolsResponse, 5)
@@ -371,7 +371,7 @@ func TestRun_ContextCancellation(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_1", Name: "slow", Arguments: `{}`},
+				protocol.NewToolCall("call_1", "slow", `{}`),
 			}),
 		},
 		nil,
@@ -636,7 +636,7 @@ func TestRun_ToolCallRecordFields(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_abc", Name: "mytool", Arguments: `{"x":1}`},
+				protocol.NewToolCall("call_abc", "mytool", `{"x":1}`),
 			}),
 			makeFinalResponse("done"),
 		},
@@ -674,11 +674,11 @@ func TestRun_ToolCallRecordFields(t *testing.T) {
 	if tc.ID != "call_abc" {
 		t.Errorf("got ID %q, want %q", tc.ID, "call_abc")
 	}
-	if tc.Name != "mytool" {
-		t.Errorf("got name %q, want %q", tc.Name, "mytool")
+	if tc.Function.Name != "mytool" {
+		t.Errorf("got name %q, want %q", tc.Function.Name, "mytool")
 	}
-	if tc.Arguments != `{"x":1}` {
-		t.Errorf("got arguments %q, want %q", tc.Arguments, `{"x":1}`)
+	if tc.Function.Arguments != `{"x":1}` {
+		t.Errorf("got arguments %q, want %q", tc.Function.Arguments, `{"x":1}`)
 	}
 	if tc.Result != "result_value" {
 		t.Errorf("got result %q, want %q", tc.Result, "result_value")
@@ -694,13 +694,13 @@ func TestRun_UnlimitedIterations(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_1", Name: "step", Arguments: `{}`},
+				protocol.NewToolCall("call_1", "step", `{}`),
 			}),
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_2", Name: "step", Arguments: `{}`},
+				protocol.NewToolCall("call_2", "step", `{}`),
 			}),
 			makeToolsResponse([]protocol.ToolCall{
-				{ID: "call_3", Name: "step", Arguments: `{}`},
+				protocol.NewToolCall("call_3", "step", `{}`),
 			}),
 			makeFinalResponse("finished after 4 iterations"),
 		},

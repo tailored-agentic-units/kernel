@@ -111,11 +111,7 @@ func TestMockAgent_Tools(t *testing.T) {
 			Role:    "assistant",
 			Content: "",
 			ToolCalls: []protocol.ToolCall{
-				{
-					ID:        "call_123",
-					Name:      "test_func",
-					Arguments: `{}`,
-				},
+				protocol.NewToolCall("call_123", "test_func", `{}`),
 			},
 		},
 	})
@@ -242,5 +238,59 @@ func TestNewStreamingChatAgent(t *testing.T) {
 
 	if content != "Hello, world!" {
 		t.Errorf("got content %q, want %q", content, "Hello, world!")
+	}
+}
+
+func TestMockAgent_ToolsStream(t *testing.T) {
+	toolCallDeltas := [][]protocol.ToolCall{
+		{protocol.NewToolCall("call_1", "search", `{"query":`)},
+		{protocol.NewToolCall("", "", `"test"}`)},
+	}
+
+	agent := mock.NewStreamingToolsAgent("test-id", toolCallDeltas)
+
+	stream, err := agent.ToolsStream(context.Background(), protocol.InitMessages(protocol.RoleUser, "test"), nil)
+
+	if err != nil {
+		t.Fatalf("ToolsStream failed: %v", err)
+	}
+
+	var allToolCalls []protocol.ToolCall
+	for chunk := range stream {
+		if chunk.Error != nil {
+			t.Fatalf("Stream error: %v", chunk.Error)
+		}
+		allToolCalls = append(allToolCalls, chunk.ToolCalls()...)
+	}
+
+	if len(allToolCalls) != 2 {
+		t.Fatalf("got %d tool call deltas, want 2", len(allToolCalls))
+	}
+
+	if allToolCalls[0].Function.Name != "search" {
+		t.Errorf("got Function.Name %q, want %q", allToolCalls[0].Function.Name, "search")
+	}
+}
+
+func TestNewStreamingToolsAgent(t *testing.T) {
+	agent := mock.NewStreamingToolsAgent("test-id", [][]protocol.ToolCall{
+		{protocol.NewToolCall("call_1", "fn", "{}")},
+	})
+
+	if agent.ID() != "test-id" {
+		t.Errorf("got ID %q, want %q", agent.ID(), "test-id")
+	}
+
+	stream, err := agent.ToolsStream(context.Background(), nil, nil)
+	if err != nil {
+		t.Fatalf("ToolsStream failed: %v", err)
+	}
+
+	count := 0
+	for range stream {
+		count++
+	}
+	if count != 1 {
+		t.Errorf("got %d chunks, want 1", count)
 	}
 }

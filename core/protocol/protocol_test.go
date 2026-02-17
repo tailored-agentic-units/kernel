@@ -164,8 +164,8 @@ func TestRole_Constants(t *testing.T) {
 
 func TestMessage_ToolCallFields(t *testing.T) {
 	toolCalls := []protocol.ToolCall{
-		{ID: "call_1", Name: "get_weather", Arguments: `{"city":"NYC"}`},
-		{ID: "call_2", Name: "get_time", Arguments: `{"tz":"UTC"}`},
+		protocol.NewToolCall("call_1", "get_weather", `{"city":"NYC"}`),
+		protocol.NewToolCall("call_2", "get_time", `{"tz":"UTC"}`),
 	}
 
 	msg := protocol.Message{
@@ -176,8 +176,8 @@ func TestMessage_ToolCallFields(t *testing.T) {
 	if len(msg.ToolCalls) != 2 {
 		t.Fatalf("got %d tool calls, want 2", len(msg.ToolCalls))
 	}
-	if msg.ToolCalls[0].Name != "get_weather" {
-		t.Errorf("got name %q, want %q", msg.ToolCalls[0].Name, "get_weather")
+	if msg.ToolCalls[0].Function.Name != "get_weather" {
+		t.Errorf("got name %q, want %q", msg.ToolCalls[0].Function.Name, "get_weather")
 	}
 	if msg.ToolCalls[1].ID != "call_2" {
 		t.Errorf("got id %q, want %q", msg.ToolCalls[1].ID, "call_2")
@@ -220,7 +220,7 @@ func TestMessage_JSON_OmitsEmptyToolFields(t *testing.T) {
 func TestMessage_JSON_IncludesToolFields(t *testing.T) {
 	msg := protocol.Message{
 		Role:      protocol.RoleAssistant,
-		ToolCalls: []protocol.ToolCall{{ID: "call_1", Name: "fn", Arguments: "{}"}},
+		ToolCalls: []protocol.ToolCall{protocol.NewToolCall("call_1", "fn", "{}")},
 	}
 
 	data, err := json.Marshal(msg)
@@ -238,7 +238,7 @@ func TestMessage_JSON_IncludesToolFields(t *testing.T) {
 	}
 }
 
-func TestToolCall_UnmarshalJSON_NestedFormat(t *testing.T) {
+func TestToolCall_Unmarshal_NativeFormat(t *testing.T) {
 	data := `{
 		"id": "call_123",
 		"type": "function",
@@ -250,44 +250,24 @@ func TestToolCall_UnmarshalJSON_NestedFormat(t *testing.T) {
 
 	var tc protocol.ToolCall
 	if err := json.Unmarshal([]byte(data), &tc); err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
+		t.Fatalf("Unmarshal failed: %v", err)
 	}
 
 	if tc.ID != "call_123" {
 		t.Errorf("got ID %q, want %q", tc.ID, "call_123")
 	}
-	if tc.Name != "get_weather" {
-		t.Errorf("got Name %q, want %q", tc.Name, "get_weather")
+	if tc.Type != "function" {
+		t.Errorf("got Type %q, want %q", tc.Type, "function")
 	}
-	if tc.Arguments != `{"location":"Boston"}` {
-		t.Errorf("got Arguments %q, want %q", tc.Arguments, `{"location":"Boston"}`)
+	if tc.Function.Name != "get_weather" {
+		t.Errorf("got Function.Name %q, want %q", tc.Function.Name, "get_weather")
 	}
-}
-
-func TestToolCall_UnmarshalJSON_FlatFormat(t *testing.T) {
-	data := `{
-		"id": "call_456",
-		"name": "search",
-		"arguments": "{\"query\":\"test\"}"
-	}`
-
-	var tc protocol.ToolCall
-	if err := json.Unmarshal([]byte(data), &tc); err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
-	}
-
-	if tc.ID != "call_456" {
-		t.Errorf("got ID %q, want %q", tc.ID, "call_456")
-	}
-	if tc.Name != "search" {
-		t.Errorf("got Name %q, want %q", tc.Name, "search")
-	}
-	if tc.Arguments != `{"query":"test"}` {
-		t.Errorf("got Arguments %q, want %q", tc.Arguments, `{"query":"test"}`)
+	if tc.Function.Arguments != `{"location":"Boston"}` {
+		t.Errorf("got Function.Arguments %q, want %q", tc.Function.Arguments, `{"location":"Boston"}`)
 	}
 }
 
-func TestToolCall_UnmarshalJSON_InvalidJSON(t *testing.T) {
+func TestToolCall_Unmarshal_InvalidJSON(t *testing.T) {
 	var tc protocol.ToolCall
 	err := json.Unmarshal([]byte(`{invalid}`), &tc)
 	if err == nil {
@@ -295,18 +275,18 @@ func TestToolCall_UnmarshalJSON_InvalidJSON(t *testing.T) {
 	}
 }
 
-func TestToolCall_UnmarshalJSON_EmptyObject(t *testing.T) {
+func TestToolCall_Unmarshal_EmptyObject(t *testing.T) {
 	var tc protocol.ToolCall
 	if err := json.Unmarshal([]byte(`{}`), &tc); err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
+		t.Fatalf("Unmarshal failed: %v", err)
 	}
 
-	if tc.ID != "" || tc.Name != "" || tc.Arguments != "" {
+	if tc.ID != "" || tc.Type != "" || tc.Function.Name != "" || tc.Function.Arguments != "" {
 		t.Errorf("expected empty ToolCall, got %+v", tc)
 	}
 }
 
-func TestToolCall_UnmarshalJSON_InArray(t *testing.T) {
+func TestToolCall_Unmarshal_InArray(t *testing.T) {
 	data := `[
 		{
 			"id": "call_1",
@@ -318,38 +298,37 @@ func TestToolCall_UnmarshalJSON_InArray(t *testing.T) {
 		},
 		{
 			"id": "call_2",
-			"name": "fn_b",
-			"arguments": "{\"x\":1}"
+			"type": "function",
+			"function": {
+				"name": "fn_b",
+				"arguments": "{\"x\":1}"
+			}
 		}
 	]`
 
 	var calls []protocol.ToolCall
 	if err := json.Unmarshal([]byte(data), &calls); err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
+		t.Fatalf("Unmarshal failed: %v", err)
 	}
 
 	if len(calls) != 2 {
 		t.Fatalf("got %d calls, want 2", len(calls))
 	}
 
-	if calls[0].Name != "fn_a" {
-		t.Errorf("call[0] Name = %q, want %q", calls[0].Name, "fn_a")
+	if calls[0].Function.Name != "fn_a" {
+		t.Errorf("call[0] Function.Name = %q, want %q", calls[0].Function.Name, "fn_a")
 	}
-	if calls[1].Name != "fn_b" {
-		t.Errorf("call[1] Name = %q, want %q", calls[1].Name, "fn_b")
+	if calls[1].Function.Name != "fn_b" {
+		t.Errorf("call[1] Function.Name = %q, want %q", calls[1].Function.Name, "fn_b")
 	}
 }
 
-func TestToolCall_MarshalJSON_NestedFormat(t *testing.T) {
-	tc := protocol.ToolCall{
-		ID:        "call_789",
-		Name:      "get_weather",
-		Arguments: `{"location":"Boston"}`,
-	}
+func TestToolCall_Marshal_NativeFormat(t *testing.T) {
+	tc := protocol.NewToolCall("call_789", "get_weather", `{"location":"Boston"}`)
 
 	data, err := json.Marshal(tc)
 	if err != nil {
-		t.Fatalf("MarshalJSON failed: %v", err)
+		t.Fatalf("Marshal failed: %v", err)
 	}
 
 	var raw map[string]any
@@ -374,41 +353,49 @@ func TestToolCall_MarshalJSON_NestedFormat(t *testing.T) {
 	if fn["arguments"] != `{"location":"Boston"}` {
 		t.Errorf("got function.arguments %v, want %q", fn["arguments"], `{"location":"Boston"}`)
 	}
-
-	// Verify flat fields are NOT present at top level
-	if _, exists := raw["name"]; exists {
-		t.Error("name should not be at top level in nested format")
-	}
-	if _, exists := raw["arguments"]; exists {
-		t.Error("arguments should not be at top level in nested format")
-	}
 }
 
-func TestToolCall_MarshalJSON_RoundTrip(t *testing.T) {
-	original := protocol.ToolCall{
-		ID:        "call_rt",
-		Name:      "search",
-		Arguments: `{"query":"test","limit":10}`,
-	}
+func TestToolCall_Marshal_RoundTrip(t *testing.T) {
+	original := protocol.NewToolCall("call_rt", "search", `{"query":"test","limit":10}`)
 
 	data, err := json.Marshal(original)
 	if err != nil {
-		t.Fatalf("MarshalJSON failed: %v", err)
+		t.Fatalf("Marshal failed: %v", err)
 	}
 
 	var restored protocol.ToolCall
 	if err := json.Unmarshal(data, &restored); err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
+		t.Fatalf("Unmarshal failed: %v", err)
 	}
 
 	if restored.ID != original.ID {
 		t.Errorf("ID: got %q, want %q", restored.ID, original.ID)
 	}
-	if restored.Name != original.Name {
-		t.Errorf("Name: got %q, want %q", restored.Name, original.Name)
+	if restored.Type != original.Type {
+		t.Errorf("Type: got %q, want %q", restored.Type, original.Type)
 	}
-	if restored.Arguments != original.Arguments {
-		t.Errorf("Arguments: got %q, want %q", restored.Arguments, original.Arguments)
+	if restored.Function.Name != original.Function.Name {
+		t.Errorf("Function.Name: got %q, want %q", restored.Function.Name, original.Function.Name)
+	}
+	if restored.Function.Arguments != original.Function.Arguments {
+		t.Errorf("Function.Arguments: got %q, want %q", restored.Function.Arguments, original.Function.Arguments)
+	}
+}
+
+func TestNewToolCall(t *testing.T) {
+	tc := protocol.NewToolCall("call_1", "get_weather", `{"city":"NYC"}`)
+
+	if tc.ID != "call_1" {
+		t.Errorf("got ID %q, want %q", tc.ID, "call_1")
+	}
+	if tc.Type != "function" {
+		t.Errorf("got Type %q, want %q", tc.Type, "function")
+	}
+	if tc.Function.Name != "get_weather" {
+		t.Errorf("got Function.Name %q, want %q", tc.Function.Name, "get_weather")
+	}
+	if tc.Function.Arguments != `{"city":"NYC"}` {
+		t.Errorf("got Function.Arguments %q, want %q", tc.Function.Arguments, `{"city":"NYC"}`)
 	}
 }
 

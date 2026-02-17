@@ -183,7 +183,7 @@ func executeTools(ctx context.Context, agent agent.Agent, prompt string, tools [
 		if len(message.ToolCalls) > 0 {
 			fmt.Printf("\nTool Calls:\n")
 			for _, toolCall := range message.ToolCalls {
-				fmt.Printf("  - %s(%s)\n", toolCall.Name, toolCall.Arguments)
+				fmt.Printf("  - %s(%s)\n", toolCall.Function.Name, toolCall.Function.Arguments)
 			}
 		}
 	}

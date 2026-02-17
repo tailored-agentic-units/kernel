@@ -41,17 +41,54 @@ func NewStreamingChatAgent(id string, chunks []string) *MockAgent {
 		chunk.Choices = append(chunk.Choices, struct {
 			Index int `json:"index"`
 			Delta struct {
-				Role    string `json:"role,omitempty"`
-				Content string `json:"content,omitempty"`
+				Role      string              `json:"role,omitempty"`
+				Content   string              `json:"content,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			} `json:"delta"`
 			FinishReason *string `json:"finish_reason"`
 		}{
 			Index: 0,
 			Delta: struct {
-				Role    string `json:"role,omitempty"`
-				Content string `json:"content,omitempty"`
+				Role      string              `json:"role,omitempty"`
+				Content   string              `json:"content,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 			}{
 				Content: content,
+			},
+		})
+		streamChunks[i] = chunk
+	}
+
+	return NewMockAgent(
+		WithID(id),
+		WithStreamChunks(streamChunks, nil),
+	)
+}
+
+// NewStreamingToolsAgent creates a MockAgent configured for streaming tool calls.
+// Each tool call delta is delivered as a separate streaming chunk.
+func NewStreamingToolsAgent(id string, toolCallDeltas [][]protocol.ToolCall) *MockAgent {
+	streamChunks := make([]response.StreamingChunk, len(toolCallDeltas))
+	for i, tcs := range toolCallDeltas {
+		chunk := response.StreamingChunk{
+			Model: "mock-model",
+		}
+		chunk.Choices = append(chunk.Choices, struct {
+			Index int `json:"index"`
+			Delta struct {
+				Role      string              `json:"role,omitempty"`
+				Content   string              `json:"content,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
+			} `json:"delta"`
+			FinishReason *string `json:"finish_reason"`
+		}{
+			Index: 0,
+			Delta: struct {
+				Role      string              `json:"role,omitempty"`
+				Content   string              `json:"content,omitempty"`
+				ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
+			}{
+				ToolCalls: tcs,
 			},
 		})
 		streamChunks[i] = chunk

@@ -60,6 +60,8 @@ type Agent interface {
 	// Returns the parsed tools response with tool calls or an error.
 	Tools(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (*response.ToolsResponse, error)
 
+	ToolsStream(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (<-chan *response.StreamingChunk, error)
+
 	// Embed executes an embeddings protocol request.
 	// Returns the parsed embeddings response or an error.
 	Embed(ctx context.Context, input string, opts ...map[string]any) (*response.EmbeddingsResponse, error)
@@ -234,6 +236,16 @@ func (a *agent) Tools(ctx context.Context, prompt []protocol.Message, tools []pr
 	}
 
 	return resp, nil
+}
+
+func (a *agent) ToolsStream(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+	messages := a.initMessages(prompt)
+	options := a.mergeOptions(protocol.Tools, opts...)
+	options["stream"] = true
+
+	req := request.NewTools(a.provider, a.model, messages, tools, options)
+
+	return a.client.ExecuteStream(ctx, req)
 }
 
 // Embed executes an embeddings protocol request.
