@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,6 +18,13 @@ const (
 
 	// ErrorTypeLLM indicates errors from LLM interactions.
 	ErrorTypeLLM ErrorType = "llm"
+)
+
+// Sentinel errors for the agent registry.
+var (
+	ErrAgentNotFound  = errors.New("agent not found")
+	ErrAgentExists    = errors.New("agent already registered")
+	ErrEmptyAgentName = errors.New("agent name is empty")
 )
 
 // AgentError provides detailed error information for agent operations.

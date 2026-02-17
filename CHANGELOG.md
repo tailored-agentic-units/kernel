@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.0-dev.2.24
+
+### agent
+
+- Add `Registry` type for named agent management with lazy instantiation (#24)
+- Add `AgentInfo` type for agent metadata and capability querying (#24)
+- Add sentinel errors: `ErrAgentNotFound`, `ErrAgentExists`, `ErrEmptyAgentName` (#24)
+
+### kernel
+
+- Add `Agents` map to `Config` for named agent registration (#24)
+- Wire agent registry into kernel lifecycle with `Registry()` accessor and `WithRegistry` option (#24)
+
 ## v0.1.0-dev.2.23
 
 ### core

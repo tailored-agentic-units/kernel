@@ -13,7 +13,7 @@ github.com/tailored-agentic-units/kernel
 | Package | Description |
 |---------|-------------|
 | `core/` | Foundational type vocabulary: protocol constants, response types, configuration, model |
-| `agent/` | LLM communication: agent interface, HTTP client, providers (Ollama, Azure), request construction |
+| `agent/` | LLM communication: agent interface, HTTP client, providers (Ollama, Azure), request construction, named agent registry |
 | `orchestrate/` | Multi-agent coordination: hubs, messaging, state graphs, workflow patterns, observability |
 | `memory/` | Unified context composition: Store interface, FileStore, Cache. Namespaces: `memory/`, `skills/`, `agents/` |
 | `tools/` | Tool execution: global registry with Register, Execute, List |

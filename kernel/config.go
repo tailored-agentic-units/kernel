@@ -15,11 +15,12 @@ const defaultMaxIterations = 10
 // Config holds initialization parameters for all kernel subsystems.
 // Each subsystem section delegates to that subsystem's config-driven constructor.
 type Config struct {
-	Agent         config.AgentConfig `json:"agent"`
-	Session       session.Config     `json:"session"`
-	Memory        memory.Config      `json:"memory"`
-	MaxIterations int                `json:"max_iterations,omitempty"`
-	SystemPrompt  string             `json:"system_prompt,omitempty"`
+	Agent         config.AgentConfig            `json:"agent"`
+	Agents        map[string]config.AgentConfig `json:"agents,omitempty"`
+	Session       session.Config                `json:"session"`
+	Memory        memory.Config                 `json:"memory"`
+	MaxIterations int                           `json:"max_iterations,omitempty"`
+	SystemPrompt  string                        `json:"system_prompt,omitempty"`
 }
 
 // DefaultConfig returns a Config with sensible defaults for all subsystems.
@@ -44,6 +45,10 @@ func (c *Config) Merge(source *Config) {
 	}
 	if source.SystemPrompt != "" {
 		c.SystemPrompt = source.SystemPrompt
+	}
+
+	if len(source.Agents) > 0 {
+		c.Agents = source.Agents
 	}
 }
 
