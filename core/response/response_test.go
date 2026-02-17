@@ -170,6 +170,122 @@ func TestStreamingChunk_Unmarshal(t *testing.T) {
 	}
 }
 
+func TestStreamingChunk_ToolCalls(t *testing.T) {
+	jsonData := `{
+		"model": "gpt-4",
+		"choices": [{
+			"index": 0,
+			"delta": {
+				"tool_calls": [{
+					"id": "call_1",
+					"type": "function",
+					"function": {
+						"name": "get_weather",
+						"arguments": "{\"location\":"
+					}
+				}]
+			},
+			"finish_reason": null
+		}]
+	}`
+
+	var chunk response.StreamingChunk
+	if err := json.Unmarshal([]byte(jsonData), &chunk); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	toolCalls := chunk.ToolCalls()
+	if len(toolCalls) != 1 {
+		t.Fatalf("got %d tool calls, want 1", len(toolCalls))
+	}
+
+	if toolCalls[0].ID != "call_1" {
+		t.Errorf("got ID %q, want %q", toolCalls[0].ID, "call_1")
+	}
+	if toolCalls[0].Function.Name != "get_weather" {
+		t.Errorf("got Function.Name %q, want %q", toolCalls[0].Function.Name, "get_weather")
+	}
+	if toolCalls[0].Function.Arguments != `{"location":` {
+		t.Errorf("got Function.Arguments %q, want %q", toolCalls[0].Function.Arguments, `{"location":`)
+	}
+}
+
+func TestStreamingChunk_ToolCalls_EmptyChoices(t *testing.T) {
+	chunk := response.StreamingChunk{}
+	if toolCalls := chunk.ToolCalls(); toolCalls != nil {
+		t.Errorf("got %v, want nil", toolCalls)
+	}
+}
+
+func TestStreamingChunk_ToolCalls_ContinuationChunk(t *testing.T) {
+	// Continuation chunks carry arguments without id/name
+	jsonData := `{
+		"model": "gpt-4",
+		"choices": [{
+			"index": 0,
+			"delta": {
+				"tool_calls": [{
+					"id": "",
+					"type": "function",
+					"function": {
+						"name": "",
+						"arguments": "\"Boston\"}"
+					}
+				}]
+			},
+			"finish_reason": null
+		}]
+	}`
+
+	var chunk response.StreamingChunk
+	if err := json.Unmarshal([]byte(jsonData), &chunk); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	toolCalls := chunk.ToolCalls()
+	if len(toolCalls) != 1 {
+		t.Fatalf("got %d tool calls, want 1", len(toolCalls))
+	}
+
+	if toolCalls[0].Function.Arguments != `"Boston"}` {
+		t.Errorf("got Function.Arguments %q, want %q", toolCalls[0].Function.Arguments, `"Boston"}`)
+	}
+}
+
+func TestParseToolsStreamChunk(t *testing.T) {
+	jsonData := []byte(`{
+		"model": "gpt-4",
+		"choices": [{
+			"index": 0,
+			"delta": {
+				"tool_calls": [{
+					"id": "call_1",
+					"type": "function",
+					"function": {
+						"name": "search",
+						"arguments": "{}"
+					}
+				}]
+			},
+			"finish_reason": null
+		}]
+	}`)
+
+	chunk, err := response.ParseToolsStreamChunk(jsonData)
+	if err != nil {
+		t.Fatalf("ParseToolsStreamChunk failed: %v", err)
+	}
+
+	toolCalls := chunk.ToolCalls()
+	if len(toolCalls) != 1 {
+		t.Fatalf("got %d tool calls, want 1", len(toolCalls))
+	}
+
+	if toolCalls[0].Function.Name != "search" {
+		t.Errorf("got Function.Name %q, want %q", toolCalls[0].Function.Name, "search")
+	}
+}
+
 func TestEmbeddingsResponse_Unmarshal(t *testing.T) {
 	jsonData := `{
 		"object": "list",
@@ -258,8 +374,8 @@ func TestToolsResponse_Unmarshal(t *testing.T) {
 		t.Errorf("got tool call ID %q, want %q", toolCall.ID, "call_123")
 	}
 
-	if toolCall.Name != "get_weather" {
-		t.Errorf("got function name %q, want %q", toolCall.Name, "get_weather")
+	if toolCall.Function.Name != "get_weather" {
+		t.Errorf("got function name %q, want %q", toolCall.Function.Name, "get_weather")
 	}
 }
 

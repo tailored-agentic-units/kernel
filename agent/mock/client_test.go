@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/tailored-agentic-units/kernel/agent/mock"
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/core/response"
 )
 
@@ -46,8 +47,9 @@ func TestMockClient_ExecuteStream(t *testing.T) {
 	chunk.Choices = make([]struct {
 		Index int `json:"index"`
 		Delta struct {
-			Role    string `json:"role,omitempty"`
-			Content string `json:"content,omitempty"`
+			Role      string              `json:"role,omitempty"`
+			Content   string              `json:"content,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"delta"`
 		FinishReason *string `json:"finish_reason"`
 	}, 1)

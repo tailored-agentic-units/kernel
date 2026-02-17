@@ -1,7 +1,5 @@
 package protocol
 
-import "encoding/json"
-
 // Role identifies the sender of a conversation message.
 type Role string
 
@@ -12,63 +10,26 @@ const (
 	RoleTool      Role = "tool"
 )
 
-// ToolCall represents a tool invocation in conversation history.
-// Fields are flat (ID, Name, Arguments) for direct use across the kernel.
-// UnmarshalJSON transparently handles the nested LLM API format
-// (function.name, function.arguments) so provider responses decode correctly.
-type ToolCall struct {
-	ID        string `json:"id"`
+type ToolFunction struct {
 	Name      string `json:"name"`
 	Arguments string `json:"arguments"`
 }
 
-// MarshalJSON serializes to the nested LLM API format ({type, function: {name, arguments}})
-// ensuring round-trip fidelity with UnmarshalJSON for provider communication.
-func (tc ToolCall) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		ID       string `json:"id"`
-		Type     string `json:"type"`
-		Function struct {
-			Name      string `json:"name"`
-			Arguments string `json:"arguments"`
-		} `json:"function"`
-	}{
-		ID:   tc.ID,
-		Type: "function",
-		Function: struct {
-			Name      string `json:"name"`
-			Arguments string `json:"arguments"`
-		}{
-			Name:      tc.Name,
-			Arguments: tc.Arguments,
-		},
-	})
+type ToolCall struct {
+	ID       string       `json:"id"`
+	Type     string       `json:"type"`
+	Function ToolFunction `json:"function"`
 }
 
-// UnmarshalJSON handles both the nested LLM API format ({function: {name, arguments}})
-// and the flat kernel format ({name, arguments}). This allows provider responses to
-// decode directly into the canonical ToolCall type.
-func (tc *ToolCall) UnmarshalJSON(data []byte) error {
-	var nested struct {
-		ID       string `json:"id"`
-		Function struct {
-			Name      string `json:"name"`
-			Arguments string `json:"arguments"`
-		} `json:"function"`
+func NewToolCall(id, name, arguments string) ToolCall {
+	return ToolCall{
+		ID:   id,
+		Type: "function",
+		Function: ToolFunction{
+			Name:      name,
+			Arguments: arguments,
+		},
 	}
-	if err := json.Unmarshal(data, &nested); err != nil {
-		return err
-	}
-
-	if nested.Function.Name != "" {
-		tc.ID = nested.ID
-		tc.Name = nested.Function.Name
-		tc.Arguments = nested.Function.Arguments
-		return nil
-	}
-
-	type plain ToolCall
-	return json.Unmarshal(data, (*plain)(tc))
 }
 
 // Message represents a single message in a conversation.

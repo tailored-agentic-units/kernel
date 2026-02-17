@@ -125,11 +125,7 @@ func TestClient_Execute_Tools(t *testing.T) {
 				Role:    "assistant",
 				Content: "",
 				ToolCalls: []protocol.ToolCall{
-					{
-						ID:        "call_123",
-						Name:      "get_weather",
-						Arguments: `{"location":"Boston"}`,
-					},
+					protocol.NewToolCall("call_123", "get_weather", `{"location":"Boston"}`),
 				},
 			},
 		})
@@ -201,8 +197,8 @@ func TestClient_Execute_Tools(t *testing.T) {
 	}
 
 	toolCall := toolsResp.Choices[0].Message.ToolCalls[0]
-	if toolCall.Name != "get_weather" {
-		t.Errorf("got function name %q, want %q", toolCall.Name, "get_weather")
+	if toolCall.Function.Name != "get_weather" {
+		t.Errorf("got function name %q, want %q", toolCall.Function.Name, "get_weather")
 	}
 }
 

@@ -3,6 +3,8 @@ package response
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/tailored-agentic-units/kernel/core/protocol"
 )
 
 // StreamingChunk represents a single chunk from a streaming protocol response.
@@ -16,8 +18,9 @@ type StreamingChunk struct {
 	Choices []struct {
 		Index int `json:"index"`
 		Delta struct {
-			Role    string `json:"role,omitempty"`
-			Content string `json:"content,omitempty"`
+			Role      string              `json:"role,omitempty"`
+			Content   string              `json:"content,omitempty"`
+			ToolCalls []protocol.ToolCall `json:"tool_calls,omitempty"`
 		} `json:"delta"`
 		FinishReason *string `json:"finish_reason"`
 	} `json:"choices"`
@@ -31,6 +34,13 @@ func (c *StreamingChunk) Content() string {
 		return c.Choices[0].Delta.Content
 	}
 	return ""
+}
+
+func (c *StreamingChunk) ToolCalls() []protocol.ToolCall {
+	if len(c.Choices) > 0 {
+		return c.Choices[0].Delta.ToolCalls
+	}
+	return nil
 }
 
 // ParseChatStreamChunk parses a streaming chat chunk from JSON bytes.
@@ -49,7 +59,7 @@ func ParseVisionStreamChunk(data []byte) (*StreamingChunk, error) {
 }
 
 // ParseToolsStreamChunk parses a streaming tools chunk from JSON bytes.
-// Tools protocol uses the same streaming format as chat.
+// Tools streaming chunks include tool call deltas in the Delta field.
 func ParseToolsStreamChunk(data []byte) (*StreamingChunk, error) {
 	var chunk StreamingChunk
 	if err := json.Unmarshal(data, &chunk); err != nil {

@@ -75,7 +75,7 @@ func main() {
 	if len(result.ToolCalls) > 0 {
 		fmt.Println("\nTool Calls:")
 		for i, tc := range result.ToolCalls {
-			fmt.Printf("  [%d] %s(%s)\n", i+1, tc.Name, tc.Arguments)
+			fmt.Printf("  [%d] %s(%s)\n", i+1, tc.Function.Name, tc.Function.Arguments)
 			if tc.IsError {
 				fmt.Printf("    error: %s\n", tc.Result)
 			} else if len(tc.Result) > 200 {

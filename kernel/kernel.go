@@ -29,12 +29,9 @@ type Result struct {
 	ToolCalls  []ToolCallRecord // Log of all tool invocations.
 }
 
-// ToolCallRecord captures a single tool invocation within the loop.
 type ToolCallRecord struct {
+	protocol.ToolCall
 	Iteration int    // Loop cycle in which the call occurred.
-	ID        string // Provider-assigned call identifier.
-	Name      string // Tool name.
-	Arguments string // JSON-encoded arguments.
 	Result    string // Tool execution output.
 	IsError   bool   // Whether execution returned an error.
 }
@@ -191,19 +188,17 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		})
 
 		for _, tc := range choice.Message.ToolCalls {
-			k.log.Debug("tool call", "iteration", iteration+1, "name", tc.Name)
+			k.log.Debug("tool call", "iteration", iteration+1, "name", tc.Function.Name)
 
 			record := ToolCallRecord{
+				ToolCall:  tc,
 				Iteration: iteration + 1,
-				ID:        tc.ID,
-				Name:      tc.Name,
-				Arguments: tc.Arguments,
 			}
 
 			toolResult, toolErr := k.tools.Execute(
 				ctx,
-				tc.Name,
-				json.RawMessage(tc.Arguments),
+				tc.Function.Name,
+				json.RawMessage(tc.Function.Arguments),
 			)
 
 			if toolErr != nil {

@@ -203,6 +203,20 @@ func (m *MockAgent) Tools(ctx context.Context, prompt []protocol.Message, tools 
 	return m.toolsResponse, m.toolsError
 }
 
+func (m *MockAgent) ToolsStream(ctx context.Context, prompt []protocol.Message, tools []protocol.Tool, opts ...map[string]any) (<-chan *response.StreamingChunk, error) {
+	if m.streamError != nil {
+		return nil, m.streamError
+	}
+
+	ch := make(chan *response.StreamingChunk, len(m.streamChunks))
+	for i := range m.streamChunks {
+		ch <- &m.streamChunks[i]
+	}
+	close(ch)
+
+	return ch, nil
+}
+
 // Embed returns the predetermined embeddings response.
 func (m *MockAgent) Embed(ctx context.Context, input string, opts ...map[string]any) (*response.EmbeddingsResponse, error) {
 	return m.embeddingsResponse, m.embeddingsError
