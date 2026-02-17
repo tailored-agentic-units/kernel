@@ -53,7 +53,7 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 | `core/protocol` | Protocol constants, message types | `Protocol`, `Message` |
 | `core/response` | Response parsing, streaming | `ChatResponse`, `ToolsResponse` |
 | `core/model` | Model runtime type | `Model` |
-| `agent` | Agent interface, lifecycle | `Agent` |
+| `agent` | Agent interface, lifecycle, named agent registry | `Agent`, `Registry`, `AgentInfo` |
 | `agent/client` | HTTP transport, retry | `Client` |
 | `agent/providers` | LLM platform adapters | `Provider`, `Registry` |
 | `agent/request` | Request construction | `Builder` |

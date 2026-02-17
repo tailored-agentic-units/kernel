@@ -32,7 +32,7 @@ Single Go module. All packages share one version. No dependency cascade.
 kernel/
 ├── _project/          # Project identity, phase, and objective context
 ├── core/               # Foundational types: protocol, response, config, model
-├── agent/              # LLM communication: agent interface, client, providers, request, mock
+├── agent/              # LLM communication: agent interface, client, providers, request, mock, registry
 ├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
 ├── memory/             # Unified context composition: Store, FileStore, Cache. Namespaces: memory/, skills/, agents/
 ├── tools/              # Tool execution: global registry with Register, Execute, List

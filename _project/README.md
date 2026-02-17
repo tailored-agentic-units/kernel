@@ -39,7 +39,7 @@ Extension ecosystem (external services connecting through the interface):
 | Subsystem | Domain | Depends On | Status |
 |-----------|--------|------------|--------|
 | **core** | Foundational types: Protocol, Message, Response, Config, Model | uuid | Complete |
-| **agent** | LLM client: Agent, Client, Provider, Request, Mock | core | Complete |
+| **agent** | LLM client: Agent, Client, Provider, Request, Mock, Registry | core | Complete |
 | **orchestrate** | Coordination: Hub, State, Workflows, Observability, Checkpoint | agent | Complete |
 | **memory** | Unified context composition: Store interface, FileStore, Cache. Namespaces: `memory/`, `skills/`, `agents/` | *(none)* | Complete |
 | **tools** | Tool system: global registry with Register, Execute, List | core | Complete |

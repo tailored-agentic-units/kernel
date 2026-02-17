@@ -10,7 +10,9 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/tailored-agentic-units/kernel/agent"
 	"github.com/tailored-agentic-units/kernel/agent/mock"
+	"github.com/tailored-agentic-units/kernel/core/config"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/core/response"
 	"github.com/tailored-agentic-units/kernel/kernel"
@@ -805,3 +807,83 @@ func (s *testSession) ID() string                        { return "test-session"
 func (s *testSession) AddMessage(msg protocol.Message)   { s.messages = append(s.messages, msg) }
 func (s *testSession) Messages() []protocol.Message      { return append([]protocol.Message{}, s.messages...) }
 func (s *testSession) Clear()                            { s.messages = nil }
+
+// --- Registry integration tests ---
+
+func TestNew_WithAgentsConfig(t *testing.T) {
+	cfg := minimalConfig()
+	cfg.Agents = map[string]config.AgentConfig{
+		"qwen3-8b": {
+			Provider: &config.ProviderConfig{Name: "ollama", BaseURL: "http://localhost:11434"},
+			Model: &config.ModelConfig{
+				Name:         "qwen3:8b",
+				Capabilities: map[string]map[string]any{"chat": {}, "tools": {}},
+			},
+		},
+	}
+
+	k, err := kernel.New(cfg,
+		kernel.WithAgent(mock.NewMockAgent()),
+		kernel.WithSession(newTestSession()),
+	)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+
+	reg := k.Registry()
+	if reg == nil {
+		t.Fatal("Registry() returned nil")
+	}
+
+	infos := reg.List()
+	if len(infos) != 1 {
+		t.Fatalf("got %d registered agents, want 1", len(infos))
+	}
+	if infos[0].Name != "qwen3-8b" {
+		t.Errorf("got name %q, want %q", infos[0].Name, "qwen3-8b")
+	}
+}
+
+func TestNew_EmptyAgentsConfig(t *testing.T) {
+	k, err := kernel.New(minimalConfig(),
+		kernel.WithAgent(mock.NewMockAgent()),
+		kernel.WithSession(newTestSession()),
+	)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+
+	reg := k.Registry()
+	if reg == nil {
+		t.Fatal("Registry() returned nil")
+	}
+	if infos := reg.List(); len(infos) != 0 {
+		t.Errorf("got %d registered agents, want 0", len(infos))
+	}
+}
+
+func TestNew_WithRegistryOption(t *testing.T) {
+	reg := agent.NewRegistry()
+	reg.Register("custom", config.AgentConfig{
+		Provider: &config.ProviderConfig{Name: "ollama", BaseURL: "http://localhost:11434"},
+		Model:    &config.ModelConfig{Name: "custom-model"},
+	})
+
+	k, err := kernel.New(minimalConfig(),
+		kernel.WithAgent(mock.NewMockAgent()),
+		kernel.WithSession(newTestSession()),
+		kernel.WithRegistry(reg),
+	)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+
+	if k.Registry() != reg {
+		t.Error("WithRegistry option did not override config-created registry")
+	}
+
+	infos := k.Registry().List()
+	if len(infos) != 1 || infos[0].Name != "custom" {
+		t.Errorf("got %v, want single entry named 'custom'", infos)
+	}
+}

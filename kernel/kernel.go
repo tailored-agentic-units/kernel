@@ -62,6 +62,11 @@ func WithAgent(a agent.Agent) Option {
 	return func(k *Kernel) { k.agent = a }
 }
 
+// WithRegistry overrides the config-created agent registry.
+func WithRegistry(r *agent.Registry) Option {
+	return func(k *Kernel) { k.registry = r }
+}
+
 // WithSession overrides the config-created session.
 func WithSession(s session.Session) Option {
 	return func(k *Kernel) { k.session = s }
@@ -85,6 +90,7 @@ func WithLogger(l *slog.Logger) Option {
 // Kernel is the single-agent runtime that executes the agentic loop.
 type Kernel struct {
 	agent         agent.Agent
+	registry      *agent.Registry
 	session       session.Session
 	store         memory.Store
 	tools         ToolExecutor
@@ -112,8 +118,16 @@ func New(cfg *Config, opts ...Option) (*Kernel, error) {
 		return nil, fmt.Errorf("failed to create memory store: %w", err)
 	}
 
+	reg := agent.NewRegistry()
+	for name, agentCfg := range cfg.Agents {
+		if err := reg.Register(name, agentCfg); err != nil {
+			return nil, fmt.Errorf("failed to register agent %q: %w", name, err)
+		}
+	}
+
 	k := &Kernel{
 		agent:         a,
+		registry:      reg,
 		session:       sesh,
 		store:         store,
 		tools:         globalToolExecutor{},
@@ -127,6 +141,11 @@ func New(cfg *Config, opts ...Option) (*Kernel, error) {
 	}
 
 	return k, nil
+}
+
+// Registry returns the kernel's agent registry.
+func (k *Kernel) Registry() *agent.Registry {
+	return k.registry
 }
 
 // Run executes the observe/think/act/repeat agentic loop for the given prompt.
