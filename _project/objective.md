@@ -11,7 +11,7 @@ Establish the kernel's HTTP interface — the sole extensibility boundary throug
 
 | # | Title | Status |
 |---|-------|--------|
-| 23 | Streaming tools protocol | Open |
+| 23 | Streaming tools protocol | PR #30 |
 | 24 | Agent registry | Open |
 | 25 | Kernel observer | Open |
 | 26 | Multi-session kernel | Open |
