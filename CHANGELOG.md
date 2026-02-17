@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.1.0-dev.2.23
+
+### core
+
+- Refactor `ToolCall` to native LLM API format: `{id, type, function: {name, arguments}}` (#23)
+- Add `ToolFunction` named type and `NewToolCall` constructor (#23)
+- Remove custom `MarshalJSON`/`UnmarshalJSON` from `ToolCall` — standard `encoding/json` handles native format directly (#23)
+- Extend `StreamingChunk.Delta` with `ToolCalls` field and `ToolCalls()` accessor (#23)
+- Add `ParseToolsStreamChunk` for streaming tool call chunks (#23)
+
+### agent
+
+- Add `ToolsStream` to `Agent` interface following `ChatStream`/`VisionStream` pattern (#23)
+- Add `NewStreamingToolsAgent` mock helper for streaming tool call test scenarios (#23)
+
+### kernel
+
+- Embed `protocol.ToolCall` in `ToolCallRecord`, eliminating field duplication (#23)
+
 ## v0.1.0-dev.1.15
 
 ### kernel
