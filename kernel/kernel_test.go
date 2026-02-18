@@ -17,6 +17,7 @@ import (
 	"github.com/tailored-agentic-units/kernel/core/response"
 	"github.com/tailored-agentic-units/kernel/kernel"
 	"github.com/tailored-agentic-units/kernel/memory"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/tools"
 )
 
@@ -745,7 +746,7 @@ func TestRun_UnlimitedIterations(t *testing.T) {
 	}
 }
 
-func TestWithLogger(t *testing.T) {
+func TestWithObserver(t *testing.T) {
 	agent := newSequentialAgent(
 		[]*response.ToolsResponse{makeFinalResponse("ok")},
 		nil,
@@ -760,7 +761,7 @@ func TestWithLogger(t *testing.T) {
 		kernel.WithAgent(agent),
 		kernel.WithSession(newTestSession()),
 		kernel.WithToolExecutor(&mockToolExecutor{}),
-		kernel.WithLogger(logger),
+		kernel.WithObserver(observability.NewSlogObserver(logger)),
 	)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
@@ -772,11 +773,11 @@ func TestWithLogger(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "run started") {
-		t.Error("expected 'run started' log entry")
+	if !strings.Contains(output, "kernel.run.start") {
+		t.Error("expected 'kernel.run.start' log entry")
 	}
-	if !strings.Contains(output, "run complete") {
-		t.Error("expected 'run complete' log entry")
+	if !strings.Contains(output, "kernel.response") {
+		t.Error("expected 'kernel.response' log entry")
 	}
 }
 

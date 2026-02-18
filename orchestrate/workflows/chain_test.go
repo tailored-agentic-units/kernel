@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
 )
 
@@ -316,12 +316,12 @@ func TestProcessChain_ObserverIntegration(t *testing.T) {
 	}
 
 	expectedEvents := []observability.EventType{
-		observability.EventChainStart,
-		observability.EventStepStart,
-		observability.EventStepComplete,
-		observability.EventStepStart,
-		observability.EventStepComplete,
-		observability.EventChainComplete,
+		workflows.EventChainStart,
+		workflows.EventStepStart,
+		workflows.EventStepComplete,
+		workflows.EventStepStart,
+		workflows.EventStepComplete,
+		workflows.EventChainComplete,
 	}
 
 	if len(observer.events) != len(expectedEvents) {
@@ -365,12 +365,12 @@ func TestProcessChain_ObserverOnError(t *testing.T) {
 	}
 
 	expectedEvents := []observability.EventType{
-		observability.EventChainStart,
-		observability.EventStepStart,
-		observability.EventStepComplete,
-		observability.EventStepStart,
-		observability.EventStepComplete,
-		observability.EventChainComplete,
+		workflows.EventChainStart,
+		workflows.EventStepStart,
+		workflows.EventStepComplete,
+		workflows.EventStepStart,
+		workflows.EventStepComplete,
+		workflows.EventChainComplete,
 	}
 
 	if len(observer.events) != len(expectedEvents) {

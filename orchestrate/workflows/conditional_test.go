@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
 )
 
@@ -323,9 +323,9 @@ func TestProcessConditional_ObserverEvents(t *testing.T) {
 	}
 
 	expectedEvents := []observability.EventType{
-		observability.EventRouteEvaluate,
-		observability.EventRouteSelect,
-		observability.EventRouteExecute,
+		workflows.EventRouteEvaluate,
+		workflows.EventRouteSelect,
+		workflows.EventRouteExecute,
 	}
 
 	if len(capture.events) != len(expectedEvents) {

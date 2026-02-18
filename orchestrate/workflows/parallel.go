@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 )
 
 // TaskProcessor processes a single item and returns a result.
@@ -163,7 +163,8 @@ func ProcessParallel[TItem, TResult any](
 
 	if len(items) == 0 {
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventParallelStart,
+			Type:      EventParallelStart,
+			Level:     observability.LevelInfo,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessParallel",
 			Data: map[string]any{
@@ -175,7 +176,8 @@ func ProcessParallel[TItem, TResult any](
 		})
 
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventParallelComplete,
+			Type:      EventParallelComplete,
+			Level:     observability.LevelInfo,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessParallel",
 			Data: map[string]any{
@@ -194,7 +196,8 @@ func ProcessParallel[TItem, TResult any](
 	workerCount := calculateWorkerCount(cfg.MaxWorkers, cfg.WorkerCap, len(items))
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventParallelStart,
+		Type:      EventParallelStart,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    "workflows.ProcessParallel",
 		Data: map[string]any{
@@ -262,7 +265,8 @@ func ProcessParallel[TItem, TResult any](
 
 	if collectorErr != nil {
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventParallelComplete,
+			Type:      EventParallelComplete,
+			Level:     observability.LevelInfo,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessParallel",
 			Data: map[string]any{
@@ -279,7 +283,8 @@ func ProcessParallel[TItem, TResult any](
 
 	if ctx.Err() != nil {
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventParallelComplete,
+			Type:      EventParallelComplete,
+			Level:     observability.LevelInfo,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessParallel",
 			Data: map[string]any{
@@ -297,7 +302,8 @@ func ProcessParallel[TItem, TResult any](
 	if len(errors) > 0 {
 		if cfg.FailFast() || len(results) == 0 {
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventParallelComplete,
+				Type:      EventParallelComplete,
+				Level:     observability.LevelInfo,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessParallel",
 				Data: map[string]any{
@@ -314,7 +320,8 @@ func ProcessParallel[TItem, TResult any](
 	}
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventParallelComplete,
+		Type:      EventParallelComplete,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    "workflows.ProcessParallel",
 		Data: map[string]any{
@@ -356,11 +363,11 @@ func calculateWorkerCount(maxWorkers, workerCap, itemCount int) int {
 // processWorker implements individual worker goroutine logic.
 //
 // Each worker runs this function concurrently with other workers. The worker:
-//   1. Reads items from workQueue until closed or context cancelled
-//   2. Processes each item via processor function
-//   3. Sends indexed results to resultChannel
-//   4. Calls progress callback on success (thread-safe via atomic counter)
-//   5. Cancels context on error if FailFast enabled
+//  1. Reads items from workQueue until closed or context cancelled
+//  2. Processes each item via processor function
+//  3. Sends indexed results to resultChannel
+//  4. Calls progress callback on success (thread-safe via atomic counter)
+//  5. Cancels context on error if FailFast enabled
 //
 // Workers exit when:
 //   - workQueue is closed (all items distributed)
@@ -391,7 +398,8 @@ func processWorker[TItem, TResult any](
 			}
 
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventWorkerStart,
+				Type:      EventWorkerStart,
+				Level:     observability.LevelVerbose,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessParallel",
 				Data: map[string]any{
@@ -404,7 +412,8 @@ func processWorker[TItem, TResult any](
 			result, err := processor(ctx, work.item)
 
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventWorkerComplete,
+				Type:      EventWorkerComplete,
+				Level:     observability.LevelVerbose,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessParallel",
 				Data: map[string]any{
@@ -445,10 +454,10 @@ func processWorker[TItem, TResult any](
 // the result channel buffer fills.
 //
 // The collector:
-//   1. Reads all results from resultChannel until closed
-//   2. Separates successes into resultMap, failures into errorMap (keyed by index)
-//   3. Builds ordered slices by iterating 0 to itemCount
-//   4. Returns dense slices (successes-only and failures-only)
+//  1. Reads all results from resultChannel until closed
+//  2. Separates successes into resultMap, failures into errorMap (keyed by index)
+//  3. Builds ordered slices by iterating 0 to itemCount
+//  4. Returns dense slices (successes-only and failures-only)
 //
 // Order preservation is achieved through indexed results - even though workers complete
 // out of order, the final slices are built by iterating indices sequentially.

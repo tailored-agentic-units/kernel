@@ -16,6 +16,7 @@ The kernel consolidates all TAU subsystems into a single Go module:
 - **session** — Conversation history and context management
 - **memory** — Unified context composition: persistent memory, skills, agent profiles
 - **mcp** — MCP client with transport abstraction
+- **observability** — Event-based observability with OTel-aligned severity levels
 - **orchestrate** — Multi-agent coordination and workflow patterns
 - **kernel** — Agent runtime: closed-loop processing with ConnectRPC interface
 
@@ -40,20 +41,22 @@ Extension ecosystem (external services connecting through the interface):
 |-----------|--------|------------|--------|
 | **core** | Foundational types: Protocol, Message, Response, Config, Model | uuid | Complete |
 | **agent** | LLM client: Agent, Client, Provider, Request, Mock, Registry | core | Complete |
-| **orchestrate** | Coordination: Hub, State, Workflows, Observability, Checkpoint | agent | Complete |
+| **observability** | Event-based observability: Observer, Event, Level (OTel-aligned), SlogObserver, registry | *(none)* | Complete |
+| **orchestrate** | Coordination: Hub, State, Workflows, Checkpoint | agent, observability | Complete |
 | **memory** | Unified context composition: Store interface, FileStore, Cache. Namespaces: `memory/`, `skills/`, `agents/` | *(none)* | Complete |
 | **tools** | Tool system: global registry with Register, Execute, List | core | Complete |
 | **session** | Conversation management: Session interface, in-memory implementation | core | Complete |
 | **mcp** | MCP client: transport abstraction, tool discovery, stdio/SSE | tools | Skeleton |
-| **kernel** | Agent runtime: agentic loop, config-driven initialization, CLI entry point | all above | Complete |
+| **kernel** | Agent runtime: agentic loop, config-driven initialization, observer integration | all above | Complete |
 
 ## Dependency Hierarchy
 
 - **kernel** — all subsystems below
-  - **orchestrate** — agent
+  - **orchestrate** — agent, observability
     - **agent** — core
   - **mcp** — tools
     - **tools** — core
+  - **observability** — *(no internal dependencies)*
   - **memory** — *(no internal dependencies)*
   - **session** — core
 - **core** — *(external: uuid)*
@@ -62,7 +65,7 @@ Key properties:
 
 - **Acyclic**: No circular dependencies at any level
 - **Shallow**: Maximum depth of 3 (kernel → mcp → tools → core)
-- **Independent foundations**: memory has zero internal dependencies; tools and session depend only on core types
+- **Independent foundations**: observability and memory have zero internal dependencies; tools and session depend only on core types
 - **Clean separation**: Each subsystem owns a single domain with no overlap
 - **Enforced by Go**: Import rules and the type system enforce boundaries within the single module
 

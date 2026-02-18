@@ -12,12 +12,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
+	"time"
 
 	"github.com/tailored-agentic-units/kernel/agent"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
 	"github.com/tailored-agentic-units/kernel/memory"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/session"
 	"github.com/tailored-agentic-units/kernel/tools"
 )
@@ -82,9 +83,9 @@ func WithMemoryStore(s memory.Store) Option {
 	return func(k *Kernel) { k.store = s }
 }
 
-// WithLogger overrides the default discard logger for runtime observability.
-func WithLogger(l *slog.Logger) Option {
-	return func(k *Kernel) { k.log = l }
+// WithObserver overrides the default SlogObserver.
+func WithObserver(o observability.Observer) Option {
+	return func(k *Kernel) { k.observer = o }
 }
 
 // Kernel is the single-agent runtime that executes the agentic loop.
@@ -94,7 +95,7 @@ type Kernel struct {
 	session       session.Session
 	store         memory.Store
 	tools         ToolExecutor
-	log           *slog.Logger
+	observer      observability.Observer
 	maxIterations int
 	systemPrompt  string
 }
@@ -125,13 +126,15 @@ func New(cfg *Config, opts ...Option) (*Kernel, error) {
 		}
 	}
 
+	observer := observability.NewSlogObserver(slog.Default())
+
 	k := &Kernel{
 		agent:         a,
 		registry:      reg,
 		session:       sesh,
 		store:         store,
+		observer:      observer,
 		tools:         globalToolExecutor{},
-		log:           slog.New(slog.NewTextHandler(io.Discard, nil)),
 		maxIterations: cfg.MaxIterations,
 		systemPrompt:  cfg.SystemPrompt,
 	}
@@ -165,14 +168,30 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		return result, err
 	}
 
-	k.log.Info("run started", "prompt_length", len(prompt), "max_iterations", k.maxIterations, "tools", len(k.tools.List()))
+	k.observer.OnEvent(ctx, observability.Event{
+		Type:      EventRunStart,
+		Level:     observability.LevelInfo,
+		Timestamp: time.Now(),
+		Source:    "kernel.Run",
+		Data: map[string]any{
+			"prompt_length":  len(prompt),
+			"max_iterations": k.maxIterations,
+			"tools":          len(k.tools.List()),
+		},
+	})
 
 	for iteration := 0; k.maxIterations == 0 || iteration < k.maxIterations; iteration++ {
 		if err := ctx.Err(); err != nil {
 			return result, err
 		}
 
-		k.log.Debug("iteration started", "iteration", iteration+1)
+		k.observer.OnEvent(ctx, observability.Event{
+			Type:      EventIterationStart,
+			Level:     observability.LevelVerbose,
+			Timestamp: time.Now(),
+			Source:    "kernel.Run",
+			Data:      map[string]any{"iteration": iteration + 1},
+		})
 
 		messages := k.buildMessages(systemContent)
 
@@ -195,7 +214,16 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 			result.Response = choice.Message.Content
 			result.Iterations = iteration + 1
 
-			k.log.Info("run complete", "iterations", iteration+1, "response_length", len(result.Response))
+			k.observer.OnEvent(ctx, observability.Event{
+				Type:      EventResponse,
+				Level:     observability.LevelInfo,
+				Timestamp: time.Now(),
+				Source:    "kernel.Run",
+				Data: map[string]any{
+					"iteration":       iteration + 1,
+					"response_length": len(result.Response),
+				},
+			})
 
 			return result, nil
 		}
@@ -207,7 +235,16 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 		})
 
 		for _, tc := range choice.Message.ToolCalls {
-			k.log.Debug("tool call", "iteration", iteration+1, "name", tc.Function.Name)
+			k.observer.OnEvent(ctx, observability.Event{
+				Type:      EventToolCall,
+				Level:     observability.LevelVerbose,
+				Timestamp: time.Now(),
+				Source:    "kernel.Run",
+				Data: map[string]any{
+					"iteration": iteration + 1,
+					"name":      tc.Function.Name,
+				},
+			})
 
 			record := ToolCallRecord{
 				ToolCall:  tc,
@@ -239,13 +276,34 @@ func (k *Kernel) Run(ctx context.Context, prompt string) (*Result, error) {
 				record.IsError = toolResult.IsError
 			}
 
+			k.observer.OnEvent(ctx, observability.Event{
+				Type:      EventToolComplete,
+				Level:     observability.LevelVerbose,
+				Timestamp: time.Now(),
+				Source:    "kernel.Run",
+				Data: map[string]any{
+					"iteration": iteration + 1,
+					"name":      tc.Function.Name,
+					"error":     record.IsError,
+				},
+			})
+
 			result.ToolCalls = append(result.ToolCalls, record)
 		}
 
 		result.Iterations = iteration + 1
 	}
 
-	k.log.Warn("max iterations reached", "iterations", k.maxIterations)
+	k.observer.OnEvent(ctx, observability.Event{
+		Type:      EventError,
+		Level:     observability.LevelWarning,
+		Timestamp: time.Now(),
+		Source:    "kernel.Run",
+		Data: map[string]any{
+			"error":      "max iterations reached",
+			"iterations": k.maxIterations,
+		},
+	})
 
 	return result, ErrMaxIterations
 }
@@ -284,7 +342,6 @@ func (k *Kernel) buildSystemContent(ctx context.Context) (string, error) {
 	}
 
 	for _, entry := range entries {
-		k.log.Debug("memory loaded", "key", entry.Key, "bytes", len(entry.Value))
 		content += "\n\n" + string(entry.Value)
 	}
 

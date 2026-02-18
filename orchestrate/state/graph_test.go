@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 )
 
@@ -402,7 +402,7 @@ func TestStateGraph_Execute_Cycle(t *testing.T) {
 
 	cycleEvents := 0
 	for _, event := range observer.events {
-		if event.Type == observability.EventCycleDetected {
+		if event.Type == state.EventCycleDetected {
 			cycleEvents++
 		}
 	}
@@ -629,14 +629,16 @@ func TestStateGraph_Execute_ObserverEvents(t *testing.T) {
 	}
 
 	expectedEvents := []observability.EventType{
-		observability.EventGraphStart,
-		observability.EventNodeStart,
-		observability.EventNodeComplete,
-		observability.EventEdgeEvaluate,
-		observability.EventEdgeTransition,
-		observability.EventNodeStart,
-		observability.EventNodeComplete,
-		observability.EventGraphComplete,
+		state.EventGraphStart,
+		state.EventNodeStart,
+		state.EventNodeComplete,
+		state.EventNodeState,
+		state.EventEdgeEvaluate,
+		state.EventEdgeTransition,
+		state.EventNodeStart,
+		state.EventNodeComplete,
+		state.EventNodeState,
+		state.EventGraphComplete,
 	}
 
 	if len(observer.events) != len(expectedEvents) {
