@@ -6,8 +6,8 @@ import (
 	"maps"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 )
 
 // StateGraph defines a workflow as a directed graph of nodes and edges.
@@ -312,7 +312,8 @@ func (g *stateGraph) Resume(ctx context.Context, runID string) (State, error) {
 	}
 
 	g.observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventCheckpointLoad,
+		Type:      EventCheckpointLoad,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    g.name,
 		Data: map[string]any{
@@ -327,7 +328,8 @@ func (g *stateGraph) Resume(ctx context.Context, runID string) (State, error) {
 	}
 
 	g.observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventCheckpointResume,
+		Type:      EventCheckpointResume,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    g.name,
 		Data: map[string]any{
@@ -346,7 +348,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 	}
 
 	g.observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventGraphStart,
+		Type:      EventGraphStart,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    g.name,
 		Data: map[string]any{
@@ -387,7 +390,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 
 		if visited[current] > 1 {
 			g.observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventCycleDetected,
+				Type:      EventCycleDetected,
+				Level:     observability.LevelWarning,
 				Timestamp: time.Now(),
 				Source:    g.name,
 				Data: map[string]any{
@@ -410,7 +414,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 		}
 
 		g.observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventNodeStart,
+			Type:      EventNodeStart,
+			Level:     observability.LevelVerbose,
 			Timestamp: time.Now(),
 			Source:    g.name,
 			Data: map[string]any{
@@ -423,13 +428,26 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 		newState, err := node.Execute(ctx, state)
 
 		g.observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventNodeComplete,
+			Type:      EventNodeComplete,
+			Level:     observability.LevelVerbose,
+			Timestamp: time.Now(),
+			Source:    g.name,
+			Data: map[string]any{
+				"node":      current,
+				"iteration": iterations,
+				"error":     err != nil,
+			},
+		})
+
+		g.observer.OnEvent(ctx, observability.Event{
+			Type:      EventNodeState,
+			Level:     observability.LevelVerbose,
 			Timestamp: time.Now(),
 			Source:    g.name,
 			Data: map[string]any{
 				"node":            current,
 				"iteration":       iterations,
-				"error":           err != nil,
+				"input_snapshot":  maps.Clone(state.Data),
 				"output_snapshot": maps.Clone(newState.Data),
 			},
 		})
@@ -456,7 +474,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 			}
 
 			g.observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventCheckpointSave,
+				Type:      EventCheckpointSave,
+				Level:     observability.LevelInfo,
 				Timestamp: time.Now(),
 				Source:    g.name,
 				Data: map[string]any{
@@ -468,7 +487,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 
 		if g.exitPoints[current] {
 			g.observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventGraphComplete,
+				Type:      EventGraphComplete,
+				Level:     observability.LevelInfo,
 				Timestamp: time.Now(),
 				Source:    g.name,
 				Data: map[string]any{
@@ -498,7 +518,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 		nextNode := ""
 		for i, edge := range edges {
 			g.observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventEdgeEvaluate,
+				Type:      EventEdgeEvaluate,
+				Level:     observability.LevelVerbose,
 				Timestamp: time.Now(),
 				Source:    g.name,
 				Data: map[string]any{
@@ -513,7 +534,8 @@ func (g *stateGraph) execute(ctx context.Context, startNode string, initialState
 				nextNode = edge.To
 
 				g.observer.OnEvent(ctx, observability.Event{
-					Type:      observability.EventEdgeTransition,
+					Type:      EventEdgeTransition,
+					Level:     observability.LevelVerbose,
 					Timestamp: time.Now(),
 					Source:    g.name,
 					Data: map[string]any{

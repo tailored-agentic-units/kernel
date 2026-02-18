@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 )
 
 // RoutePredicate evaluates state and returns a route name for conditional routing.
@@ -153,7 +153,8 @@ func ProcessConditional[TState any](
 	}
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventRouteEvaluate,
+		Type:      EventRouteEvaluate,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "conditional",
 		Data: map[string]any{
@@ -183,7 +184,8 @@ func ProcessConditional[TState any](
 	}
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventRouteSelect,
+		Type:      EventRouteSelect,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "conditional",
 		Data: map[string]any{
@@ -210,7 +212,8 @@ func ProcessConditional[TState any](
 	}
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventRouteExecute,
+		Type:      EventRouteExecute,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "conditional",
 		Data: map[string]any{

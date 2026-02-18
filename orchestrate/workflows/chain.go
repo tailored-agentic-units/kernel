@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 )
 
 // StepProcessor processes a single item and updates the accumulated context.
@@ -161,7 +161,8 @@ func ProcessChain[TItem, TContext any](
 	}
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventChainStart,
+		Type:      EventChainStart,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    "workflows.ProcessChain",
 		Data: map[string]any{
@@ -173,7 +174,8 @@ func ProcessChain[TItem, TContext any](
 
 	if len(items) == 0 {
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventChainComplete,
+			Type:      EventChainComplete,
+			Level:     observability.LevelInfo,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessChain",
 			Data: map[string]any{
@@ -201,7 +203,8 @@ func ProcessChain[TItem, TContext any](
 				Err:       fmt.Errorf("processing cancelled: %w", err),
 			}
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventChainComplete,
+				Type:      EventChainComplete,
+				Level:     observability.LevelInfo,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessChain",
 				Data: map[string]any{
@@ -214,7 +217,8 @@ func ProcessChain[TItem, TContext any](
 		}
 
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventStepStart,
+			Type:      EventStepStart,
+			Level:     observability.LevelVerbose,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessChain",
 			Data: map[string]any{
@@ -232,7 +236,8 @@ func ProcessChain[TItem, TContext any](
 				Err:       err,
 			}
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventStepComplete,
+				Type:      EventStepComplete,
+				Level:     observability.LevelVerbose,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessChain",
 				Data: map[string]any{
@@ -242,7 +247,8 @@ func ProcessChain[TItem, TContext any](
 				},
 			})
 			observer.OnEvent(ctx, observability.Event{
-				Type:      observability.EventChainComplete,
+				Type:      EventChainComplete,
+				Level:     observability.LevelInfo,
 				Timestamp: time.Now(),
 				Source:    "workflows.ProcessChain",
 				Data: map[string]any{
@@ -261,7 +267,8 @@ func ProcessChain[TItem, TContext any](
 		}
 
 		observer.OnEvent(ctx, observability.Event{
-			Type:      observability.EventStepComplete,
+			Type:      EventStepComplete,
+			Level:     observability.LevelVerbose,
 			Timestamp: time.Now(),
 			Source:    "workflows.ProcessChain",
 			Data: map[string]any{
@@ -281,7 +288,8 @@ func ProcessChain[TItem, TContext any](
 	result.Steps = len(items)
 
 	observer.OnEvent(ctx, observability.Event{
-		Type:      observability.EventChainComplete,
+		Type:      EventChainComplete,
+		Level:     observability.LevelInfo,
 		Timestamp: time.Now(),
 		Source:    "workflows.ProcessChain",
 		Data: map[string]any{

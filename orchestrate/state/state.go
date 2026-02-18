@@ -5,8 +5,8 @@ import (
 	"maps"
 	"time"
 
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/google/uuid"
+	"github.com/tailored-agentic-units/kernel/observability"
 )
 
 // State represents immutable workflow state flowing through graph execution.
@@ -58,7 +58,8 @@ func New(observer observability.Observer) State {
 	}
 
 	observer.OnEvent(context.Background(), observability.Event{
-		Type:      observability.EventStateCreate,
+		Type:      EventStateCreate,
+		Level:     observability.LevelVerbose,
 		Timestamp: s.Timestamp,
 		Source:    "state",
 		Data:      map[string]any{},
@@ -91,7 +92,8 @@ func (s State) Clone() State {
 	}
 
 	s.Observer.OnEvent(context.Background(), observability.Event{
-		Type:      observability.EventStateClone,
+		Type:      EventStateClone,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "state",
 		Data:      map[string]any{"keys": len(newState.Data)},
@@ -135,7 +137,8 @@ func (s State) Set(key string, value any) State {
 	newState.Data[key] = value
 
 	s.Observer.OnEvent(context.Background(), observability.Event{
-		Type:      observability.EventStateSet,
+		Type:      EventStateSet,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "state",
 		Data:      map[string]any{"key": key},
@@ -185,7 +188,8 @@ func (s State) Merge(other State) State {
 	maps.Copy(newState.Data, other.Data)
 
 	s.Observer.OnEvent(context.Background(), observability.Event{
-		Type:      observability.EventStateMerge,
+		Type:      EventStateMerge,
+		Level:     observability.LevelVerbose,
 		Timestamp: time.Now(),
 		Source:    "state",
 		Data:      map[string]any{"keys": len(other.Data)},

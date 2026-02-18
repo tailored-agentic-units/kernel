@@ -33,7 +33,8 @@ kernel/
 ├── _project/          # Project identity, phase, and objective context
 ├── core/               # Foundational types: protocol, response, config, model
 ├── agent/              # LLM communication: agent interface, client, providers, request, mock, registry
-├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows, observability
+├── observability/       # Event-based observability: Observer, Event, Level (OTel-aligned), SlogObserver, registry
+├── orchestrate/        # Multi-agent coordination: hub, messaging, state, workflows
 ├── memory/             # Unified context composition: Store, FileStore, Cache. Namespaces: memory/, skills/, agents/
 ├── tools/              # Tool execution: global registry with Register, Execute, List
 ├── session/            # Conversation management: Session interface, in-memory implementation
@@ -54,14 +55,14 @@ Level 1: core/response, core/model
 Level 2: agent/providers, agent/request, agent/client
 Level 3: agent (root)
 Level 4: agent/mock
-Level 5: orchestrate/observability, orchestrate/messaging, orchestrate/config
+Level 5: orchestrate/messaging, orchestrate/config
 Level 6: orchestrate/hub, orchestrate/state
 Level 7: orchestrate/workflows
 
-Foundation (Level 0 — depend only on core/protocol):
-  memory, tools, session
+Foundation (Level 0 — no internal dependencies):
+  observability, memory, tools, session
 
-Level 8: kernel (depends on agent, session, memory, tools, core)
+Level 8: kernel (depends on agent, session, memory, tools, core, observability)
 ```
 
 ## Design Principles

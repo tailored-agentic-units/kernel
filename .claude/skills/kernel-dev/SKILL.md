@@ -31,16 +31,15 @@ Level 1: core/response, core/model           (depends on Level 0)
 Level 2: agent/providers, agent/request       (depends on Level 0-1)
 Level 3: agent (root), agent/client           (depends on Level 0-2)
 Level 4: agent/mock                           (depends on Level 0-3)
-Level 5: orchestrate/observability            (zero internal deps)
-Level 6: orchestrate/messaging, orchestrate/config  (Level 5)
-Level 7: orchestrate/hub                      (depends on Level 3-6)
-Level 8: orchestrate/state                    (depends on Level 5-6)
-Level 9: orchestrate/workflows                (depends on Level 5-8)
+Level 5: orchestrate/messaging, orchestrate/config
+Level 6: orchestrate/hub                      (depends on Level 3-5)
+Level 7: orchestrate/state                    (depends on observability, Level 5)
+Level 8: orchestrate/workflows                (depends on observability, Level 5-7)
 
-Foundation (Level 0 — depend only on core/protocol):
-  memory, tools, session
+Foundation (Level 0 — no internal dependencies):
+  observability, memory, tools, session
 
-Level 10: kernel (depends on agent, session, memory, tools, core)
+Level 9: kernel (depends on agent, session, memory, tools, core, observability)
 ```
 
 Dependencies only flow downward. Never import a higher-level package from a lower-level one.
@@ -61,13 +60,13 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 | `orchestrate/config` | Orchestration config | `HubConfig`, `GraphConfig` |
 | `orchestrate/hub` | Agent coordination | `Hub` |
 | `orchestrate/messaging` | Message structures | `Message`, builders |
-| `orchestrate/observability` | Execution tracing | `Observer` |
+| `observability` | Event-based observability | `Observer`, `Event`, `Level`, `SlogObserver` |
 | `orchestrate/state` | State graphs, checkpoints | `State`, `Graph`, `CheckpointStore` |
 | `orchestrate/workflows` | Workflow patterns | `ProcessChain`, `ProcessParallel`, `ProcessConditional` |
 | `memory` | Context composition pipeline | `Store`, `Cache`, `Entry`, `NewFileStore`, `NewCache` |
 | `tools` | Tool execution and registry | `Handler`, `Result`, `Register`, `Execute`, `List` |
 | `session` | Conversation management | `Session`, `NewMemorySession` |
-| `kernel` | Agent runtime loop | `Kernel`, `Config`, `Result`, `ToolExecutor`, `WithLogger` |
+| `kernel` | Agent runtime loop | `Kernel`, `Config`, `Result`, `ToolExecutor`, `WithObserver` |
 
 ## Extension Patterns
 
@@ -80,9 +79,10 @@ Dependencies only flow downward. Never import a higher-level package from a lowe
 
 ### Adding an Observer
 
-1. Create new file in `orchestrate/observability/`
+1. Create new file in `observability/`
 2. Implement `Observer` interface
-3. Add tests alongside implementation
+3. Register in `observability/registry.go`
+4. Add tests alongside implementation
 
 ### Adding a Workflow Pattern
 

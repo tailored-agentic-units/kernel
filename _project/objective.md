@@ -13,7 +13,7 @@ Establish the kernel's HTTP interface — the sole extensibility boundary throug
 |---|-------|--------|
 | 23 | Streaming tools protocol | PR #30 |
 | 24 | Agent registry | PR #31 |
-| 25 | Kernel observer | Open |
+| 25 | Kernel observer | In Progress |
 | 26 | Multi-session kernel | Open |
 | 27 | HTTP API with SSE streaming | Open |
 | 28 | Server entry point | Open |
@@ -32,6 +32,10 @@ Establish the kernel's HTTP interface — the sole extensibility boundary throug
                        v
               [#28: Server Entry Point]
 ```
+
+## Known Gaps
+
+- **Subsystem observability** — foundation packages (`memory`, `tools`, `session`) should accept an Observer and define their own event types, similar to `orchestrate`. The kernel would pass its observer down during initialization. The kernel's `memory loaded` log was removed in #25 because the kernel shouldn't log on behalf of a subsystem — when `memory` gets its own Observer, it would emit a `memory.load` event at the appropriate level. Follow-up to #25.
 
 ## Architecture Decisions
 

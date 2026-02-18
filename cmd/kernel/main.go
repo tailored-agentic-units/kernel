@@ -10,6 +10,7 @@ import (
 	"os/signal"
 
 	"github.com/tailored-agentic-units/kernel/kernel"
+	"github.com/tailored-agentic-units/kernel/observability"
 )
 
 func main() {
@@ -57,7 +58,13 @@ func main() {
 
 	registerBuiltinTools()
 
-	runtime, err := kernel.New(cfg, kernel.WithLogger(logger))
+	runtime, err := kernel.New(
+		cfg,
+		kernel.WithObserver(
+			observability.NewSlogObserver(logger),
+		),
+	)
+
 	if err != nil {
 		log.Fatalf("Failed to create kernel runtime: %v", err)
 	}

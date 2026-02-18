@@ -3,7 +3,7 @@ package state_test
 import (
 	"testing"
 
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 )
 

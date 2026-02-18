@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/state"
 )
 
@@ -59,9 +59,9 @@ func TestState_New_EmitsEvent(t *testing.T) {
 	if len(observer.events) != 1 {
 		t.Errorf("New() emitted %d events, want 1", len(observer.events))
 	}
-	if observer.events[0].Type != observability.EventStateCreate {
+	if observer.events[0].Type != state.EventStateCreate {
 		t.Errorf("New() emitted event type %v, want %v",
-			observer.events[0].Type, observability.EventStateCreate)
+			observer.events[0].Type, state.EventStateCreate)
 	}
 }
 
@@ -78,9 +78,9 @@ func TestState_Clone(t *testing.T) {
 	if len(observer.events) != 1 {
 		t.Errorf("Clone() emitted %d events, want 1", len(observer.events))
 	}
-	if observer.events[0].Type != observability.EventStateClone {
+	if observer.events[0].Type != state.EventStateClone {
 		t.Errorf("Clone() emitted event type %v, want %v",
-			observer.events[0].Type, observability.EventStateClone)
+			observer.events[0].Type, state.EventStateClone)
 	}
 
 	val1, exists1 := cloned.Get("key1")
@@ -171,7 +171,7 @@ func TestState_Set(t *testing.T) {
 
 	hasSet := false
 	for _, event := range observer.events {
-		if event.Type == observability.EventStateSet {
+		if event.Type == state.EventStateSet {
 			hasSet = true
 			if event.Data["key"] != "key" {
 				t.Errorf("EventStateSet data[key] = %v, want %v",
@@ -222,7 +222,7 @@ func TestState_Merge(t *testing.T) {
 
 	hasMerge := false
 	for _, event := range observer.events {
-		if event.Type == observability.EventStateMerge {
+		if event.Type == state.EventStateMerge {
 			hasMerge = true
 			if event.Data["keys"] != 2 {
 				t.Errorf("EventStateMerge data[keys] = %v, want %v",

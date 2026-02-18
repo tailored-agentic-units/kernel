@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.1.0-dev.2.25
+
+### observability
+
+- Add root-level `observability` package with OTel-aligned severity levels (#25)
+- Add `Observer` interface, `Event` struct, and `Level` type with OTel SeverityNumber values (#25)
+- Add `SlogObserver` with level-aware log emission and flattened attributes (#25)
+- Add `NoOpObserver`, `MultiObserver`, and global observer registry (#25)
+
+### orchestrate
+
+- Migrate `orchestrate/observability` to root-level `observability` package (#25)
+- Add `Level` field to all event emissions with Info/Verbose/Warning assignments (#25)
+- Add `node.state` event type separating state snapshots from `node.complete` (#25)
+- Decentralize event type constants into `orchestrate/state/events.go` and `orchestrate/workflows/events.go` (#25)
+
+### kernel
+
+- Replace `*slog.Logger` with `observability.Observer` in kernel runtime loop (#25)
+- Add `WithObserver` option replacing `WithLogger` (#25)
+- Add kernel event type constants: run, iteration, tool call, response, error (#25)
+- Default to `SlogObserver(slog.Default())` for out-of-the-box observability (#25)
+
 ## v0.1.0-dev.2.24
 
 ### agent

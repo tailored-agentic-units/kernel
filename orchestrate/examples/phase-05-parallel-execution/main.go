@@ -11,8 +11,8 @@ import (
 	"github.com/tailored-agentic-units/kernel/agent"
 	agentconfig "github.com/tailored-agentic-units/kernel/core/config"
 	"github.com/tailored-agentic-units/kernel/core/protocol"
+	"github.com/tailored-agentic-units/kernel/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/config"
-	"github.com/tailored-agentic-units/kernel/orchestrate/observability"
 	"github.com/tailored-agentic-units/kernel/orchestrate/workflows"
 )
 
