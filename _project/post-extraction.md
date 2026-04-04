@@ -1,15 +1,16 @@
 # Post-Extraction: Kernel Resumption
 
-Everything needed to resume kernel development after tau/agent and tau/orchestrate libraries are built and marketplace plugins are decomposed.
+Everything needed to resume kernel development after the five TAU libraries are built.
 
 ## Prerequisites
 
 Before any kernel changes:
 
+- [ ] tau/protocol v0.1.0 tagged and stable
+- [ ] tau/format v0.1.0 tagged and stable
+- [ ] tau/provider v0.1.0 tagged and stable
 - [ ] tau/agent v0.1.0 tagged and stable
 - [ ] tau/orchestrate v0.1.0 tagged and stable
-- [ ] Marketplace plugins decomposed (at minimum, structural move of existing skills)
-- [ ] tau-agent and tau-orchestrate marketplace skills written
 
 ## Kernel Refactoring
 
@@ -19,28 +20,33 @@ These packages are extracted to standalone libraries and must be removed from th
 
 | Remove | Moved To |
 |--------|----------|
-| `core/config/` | `tau/agent` config/ |
-| `core/protocol/` | `tau/agent` protocol/ |
-| `core/response/` | `tau/agent` response/ |
-| `core/model/` | `tau/agent` model/ |
-| `agent/` (all subpackages) | `tau/agent` root + subpackages |
-| `observability/` | `tau/orchestrate` observability/ |
-| `orchestrate/` (all subpackages) | `tau/orchestrate` packages |
+| `core/config/` | tau/protocol config/ |
+| `core/protocol/` | tau/protocol root |
+| `core/response/` | tau/protocol response/ |
+| `core/model/` | tau/protocol model/ |
+| `agent/` (all subpackages) | tau/agent root + subpackages |
+| `observability/` | tau/orchestrate observability/ |
+| `orchestrate/` (all subpackages) | tau/orchestrate packages |
 
 ### Import Replacement
 
-Every file that imports extracted packages must be updated:
-
-| Current Import | New Import |
-|---------------|------------|
-| `github.com/tailored-agentic-units/kernel/core/config` | `github.com/tailored-agentic-units/agent/config` |
-| `github.com/tailored-agentic-units/kernel/core/protocol` | `github.com/tailored-agentic-units/agent/protocol` |
-| `github.com/tailored-agentic-units/kernel/core/response` | `github.com/tailored-agentic-units/agent/response` |
-| `github.com/tailored-agentic-units/kernel/core/model` | `github.com/tailored-agentic-units/agent/model` |
-| `github.com/tailored-agentic-units/kernel/agent` | `agent "github.com/tailored-agentic-units/agent"` |
-| `github.com/tailored-agentic-units/kernel/agent/client` | `github.com/tailored-agentic-units/agent/client` |
-| `github.com/tailored-agentic-units/kernel/agent/mock` | `github.com/tailored-agentic-units/agent/mock` |
-| `github.com/tailored-agentic-units/kernel/observability` | `github.com/tailored-agentic-units/orchestrate/observability` |
+| Current Import | New Import | Module |
+|---------------|------------|--------|
+| `kernel/core/config` | `github.com/tailored-agentic-units/protocol/config` | tau/protocol |
+| `kernel/core/protocol` | `protocol "github.com/tailored-agentic-units/protocol"` | tau/protocol |
+| `kernel/core/response` | `github.com/tailored-agentic-units/protocol/response` | tau/protocol |
+| `kernel/core/model` | `github.com/tailored-agentic-units/protocol/model` | tau/protocol |
+| `kernel/agent` | `agent "github.com/tailored-agentic-units/agent"` | tau/agent |
+| `kernel/agent/client` | `github.com/tailored-agentic-units/agent/client` | tau/agent |
+| `kernel/agent/mock` | `github.com/tailored-agentic-units/agent/mock` | tau/agent |
+| `kernel/agent/registry` (was in root) | `github.com/tailored-agentic-units/agent/registry` | tau/agent |
+| `kernel/observability` | `github.com/tailored-agentic-units/orchestrate/observability` | tau/orchestrate |
+| N/A (new) | `github.com/tailored-agentic-units/format` | tau/format |
+| N/A (new) | `github.com/tailored-agentic-units/provider` | tau/provider |
+| `protocol.Tool` | `format.ToolDefinition` | tau/format |
+| `response.ChatResponse` | `response.Response` | tau/protocol |
+| `response.ToolsResponse` | `response.Response` | tau/protocol |
+| `response.StreamingChunk` | `response.StreamingResponse` | tau/protocol |
 
 ### Response Model Migration
 
@@ -55,11 +61,41 @@ if len(choice.Message.ToolCalls) == 0 {
 }
 for _, tc := range choice.Message.ToolCalls {
     tc.Function.Name
-    tc.Function.Arguments
+    tc.Function.Arguments  // string
 }
 ```
 
-If tau/agent adopts the unified `Response` with `ContentBlock` interface from go-agents v0.5.0, this entire section must be rewritten to use the new response model. The exact changes depend on the API surface that emerges from the tau/agent concept session.
+Rewrite to unified Response model:
+
+```go
+// New (tau/protocol response types):
+resp, err := k.agent.Tools(ctx, messages, tools)
+if len(resp.ToolCalls()) == 0 {
+    result.Response = resp.Text()
+}
+for _, tc := range resp.ToolCalls() {
+    tc.Name
+    tc.Input  // map[string]any — must json.Marshal before tools.Execute
+}
+```
+
+Key change: `ToolUseBlock.Input` is `map[string]any`, not a JSON string. The kernel must `json.Marshal(tc.Input)` before passing to `tools.Execute(ctx, name, json.RawMessage)`.
+
+### Session + Context Management
+
+The agent interface now takes `[]Message` directly — the agent is stateless transport. The kernel already builds messages via `k.buildMessages()`. The change is that the agent no longer does internal message construction. Context management strategies (sliding window, summarization) are explicit kernel responsibilities.
+
+### Tool Type Migration
+
+The kernel's `tools/` package currently uses `protocol.Tool` for tool schemas. Post-extraction, tool definitions are `format.ToolDefinition` from tau/format:
+
+```go
+// Current:
+k.tools.List() returns []protocol.Tool
+
+// New:
+k.tools.List() returns []format.ToolDefinition
+```
 
 ### go.mod Changes
 
@@ -71,6 +107,9 @@ google.golang.org/protobuf v1.36.11
 
 **Add**:
 ```
+github.com/tailored-agentic-units/protocol v0.1.0
+github.com/tailored-agentic-units/format v0.1.0
+github.com/tailored-agentic-units/provider v0.1.0  // transitively via agent
 github.com/tailored-agentic-units/agent v0.1.0
 github.com/tailored-agentic-units/orchestrate v0.1.0
 ```
@@ -80,11 +119,9 @@ github.com/tailored-agentic-units/orchestrate v0.1.0
 github.com/google/uuid v1.6.0
 ```
 
-Note: uuid may also be used by tau/agent for agent IDs. If so, kernel may no longer need it directly — verify after extraction.
-
 ### Dead Infrastructure Removal
 
-Per the architecture decision in `_project/objective.md` (pure HTTP + JSON + SSE replaces ConnectRPC):
+Per the architecture decision (pure HTTP + JSON + SSE replaces ConnectRPC):
 
 - Remove `rpc/` directory (buf configs, proto definitions, generated code)
 - Remove `proto` label from the repository
@@ -101,7 +138,7 @@ kernel/
 ├── tools/             # Tool registry and execution
 ├── mcp/               # MCP client
 ├── api/               # HTTP + SSE handlers (new, replaces rpc/)
-├── cmd/               # Entry points (kernel, prompt-agent)
+├── cmd/               # Entry points
 ├── scripts/           # Infrastructure scripts
 ├── tests/             # Integration tests
 ├── .claude/           # Configuration and skills
@@ -114,6 +151,8 @@ kernel/
 module github.com/tailored-agentic-units/kernel
 
 require (
+    github.com/tailored-agentic-units/protocol v0.1.0
+    github.com/tailored-agentic-units/format v0.1.0
     github.com/tailored-agentic-units/agent v0.1.0
     github.com/tailored-agentic-units/orchestrate v0.1.0
 )
@@ -125,11 +164,11 @@ After refactoring, the remaining Phase 1 sub-issues become actionable:
 
 ### #26 — Multi-session kernel
 
-Parent/child session relationships for subagent orchestration. Now built on tau/agent's Agent and Registry, and tau/orchestrate's Hub with Participant interface. The kernel is the composition layer where agent.Agent satisfies hub.Participant.
+Parent/child session relationships for subagent orchestration. Now built on tau/agent's Agent and registry, and tau/orchestrate's Hub with Participant interface. The kernel is the composition layer where agent.Agent satisfies hub.Participant.
 
 ### #27 — HTTP API with SSE streaming
 
-Pure HTTP + JSON + SSE transport replacing ConnectRPC. Go types as source of truth, OpenAPI for schema docs. HTTP handlers in `api/` package. Now built on tau/agent's streaming infrastructure (StreamReader interface).
+Pure HTTP + JSON + SSE transport replacing ConnectRPC. Go types as source of truth, OpenAPI for schema docs. HTTP handlers in `api/` package. Now built on tau/agent's streaming infrastructure (StreamReader interface from tau/protocol).
 
 ### #28 — Server entry point
 
@@ -141,22 +180,20 @@ These must happen during the refactor, not after:
 
 | Document | Updates Needed |
 |----------|---------------|
-| `_project/README.md` | Vision statement (remove ConnectRPC), subsystem topology (only kernel-local packages), dependency hierarchy (now includes tau/agent + tau/orchestrate), model compatibility (defer to tau/agent), build order |
-| `_project/phase.md` | Phase 1 scope with library extraction as Phase 1A complete, remaining objectives as Phase 1B |
-| `_project/objective.md` | Re-scope #26-28 descriptions to reference tau/agent and tau/orchestrate types |
+| `_project/README.md` | Vision (remove ConnectRPC), subsystem topology (kernel-local only), dependency hierarchy (5-library architecture), build order |
+| `_project/phase.md` | Phase 1 scope post-extraction |
+| `_project/objective.md` | Re-scope #26-28 to reference tau library types |
 | `.claude/CLAUDE.md` | Project structure (reduced), dependency hierarchy (library-based), commands (remove proto), skills table |
-| `.claude/skills/kernel-dev/SKILL.md` | Package responsibilities (reduced to kernel-local), extension patterns (now via library APIs) |
+| `.claude/skills/kernel-dev/SKILL.md` | Package responsibilities (kernel-local), extension patterns (via library APIs) |
 | `README.md` | Architecture description, dependency list, quick start commands |
 
 ## Project Management Updates
 
 | Action | Details |
 |--------|---------|
-| Update Objective #2 status | "In Progress" on project board |
 | Reassign #5-9 | Close on kernel, create equivalents on tau/orchestrate repo |
 | Reassign #10 | Close on kernel, create equivalent on tau/agent repo |
-| Create Phase 1A | "Library Extraction" phase on project board, mark complete |
-| Archive concept | Move `_project/library-extraction.md` to `.claude/context/concepts/.archive/` |
+| Archive `_project/library-extraction.md` | Concept fully realized in library repos |
 | Update kernel-dev skill | Reflect reduced package scope |
 
 ## Verification
@@ -167,6 +204,5 @@ After all changes:
 - [ ] `go vet ./...` clean
 - [ ] No references to `core/`, `agent/`, `orchestrate/`, `observability/` as local packages
 - [ ] No references to `connectrpc`, `protobuf`, or `rpc/`
-- [ ] `go.mod` only depends on tau/agent, tau/orchestrate, and direct dependencies
+- [ ] `go.mod` depends on tau/protocol, tau/format, tau/agent, tau/orchestrate
 - [ ] All documentation reflects post-extraction architecture
-- [ ] Project board reflects Phase 1A complete and Phase 1B in progress
