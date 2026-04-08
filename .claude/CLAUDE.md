@@ -85,16 +85,6 @@ Single version for the entire kernel:
 - Phase target: `v<major>.<minor>.<patch>` (e.g., `v0.1.0`)
 - Dev pre-release: `v<target>-dev.<objective>.<issue>` (e.g., `v0.1.0-dev.3.7`)
 
-## Skills
-
-| Skill | Source | Use When |
-|-------|--------|----------|
-| tau:dev-workflow | plugin | Development sessions: concept, plan, task, review, release |
-| tau:go-patterns | plugin | Go design patterns, interfaces, error handling |
-| tau:project-management | plugin | GitHub Projects v2, phases, objectives |
-| tau:kernel | plugin | Building applications with the kernel |
-| kernel-dev | local | Contributing to the kernel, architecture, testing |
-
 ## Context Documents
 
 Project knowledge artifacts stored in `.claude/context/`:
@@ -116,7 +106,6 @@ During a `tau:dev-workflow` task execution session, Phase 7 (Documentation) must
 - `_project/objective.md` — sub-issue statuses
 - `README.md` — subsystem descriptions
 - `.claude/CLAUDE.md` — project structure, dependency hierarchy
-- `.claude/skills/kernel-dev/SKILL.md` — package responsibilities, dependency hierarchy, extension patterns
 
 This review happens before Phase 8 (Closeout) to ensure all project documentation stays consistent with the codebase.
 
